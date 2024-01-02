@@ -1,4 +1,9 @@
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Request,
+    status,
+)
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse
 from models import Book
