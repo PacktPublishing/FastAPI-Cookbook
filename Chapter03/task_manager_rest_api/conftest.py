@@ -10,14 +10,14 @@ TEST_DATABASE_FILE = "test_tasks.csv"
 TEST_TASKS_CSV = [
     {
         "id": "1",
-        "title": "Task One",
-        "description": "Description One",
+        "title": "Test Task One",
+        "description": "Test Description One",
         "status": "Incomplete",
     },
     {
         "id": "2",
-        "title": "Task Two",
-        "description": "Description Two",
+        "title": "Test Task Two",
+        "description": "Test Description Two",
         "status": "Ongoing",
     },
 ]
@@ -34,7 +34,7 @@ def create_test_daabase():
         Path(__file__).parent / TEST_DATABASE_FILE
     )
     with patch(
-        "operations.DATABASE_FILENAME",
+        "tm_operations.DATABASE_FILENAME",
         database_file_location,
     ) as csv_test:
         with open(

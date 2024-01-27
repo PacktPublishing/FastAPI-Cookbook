@@ -1,6 +1,6 @@
 from typing import Optional
 
-from database import user_collection
+from nosql_database import user_collection
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr, validator
 

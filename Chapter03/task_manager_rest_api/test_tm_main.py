@@ -1,7 +1,7 @@
-from main import app
+from tm_main import app
 
 from fastapi.testclient import TestClient
-from operations import read_all_tasks, read_task
+from tm_operations import read_all_tasks, read_task
 from conftest import TEST_TASKS
 
 client = TestClient(app)
@@ -11,6 +11,17 @@ def test_endpoint_read_all_tasks():
     response = client.get("/tasks")
     assert response.status_code == 200
     assert response.json() == TEST_TASKS
+
+
+def test_endpoint_get_task():
+    response = client.get("/task/1")
+
+    assert response.status_code == 200
+    assert response.json() == TEST_TASKS[0]
+
+    response = client.get("/task/5")
+
+    assert response.status_code == 404
 
 
 def test_endpoint_create_task():
@@ -24,17 +35,6 @@ def test_endpoint_create_task():
     assert response.status_code == 200
     assert response.json() == {**task, "id": 3}
     assert len(read_all_tasks()) == 3
-
-
-def test_endpoint_get_task():
-    response = client.get("/task/1")
-
-    assert response.status_code == 200
-    assert response.json() == TEST_TASKS[0]
-
-    response = client.get("/task/5")
-
-    assert response.status_code == 404
 
 
 def test_endpoint_modify_task():
@@ -61,3 +61,22 @@ def test_endpoint_delete_task():
 
     assert response.json() == expected_response
     assert read_task(2) is None
+
+
+def test_endpoint_get_tasks_with_filters():
+    response = client.get(
+        "/tasks",
+        params={"status": "Ongoing", "title": "Task Two"},
+    )
+
+    assert response.status_code == 200
+    response.json() == [TEST_TASKS[1]]
+
+
+def test_endpoint_search_task_by_keyword():
+    response = client.get(
+        "/tasks/search", params={"keyword": "ONE"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [TEST_TASKS[0]]

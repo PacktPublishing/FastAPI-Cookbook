@@ -1,4 +1,4 @@
-from database import SessionLocal, Tweet, User
+from sql_database import SessionLocal, Tweet, User
 from fastapi import Body, Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

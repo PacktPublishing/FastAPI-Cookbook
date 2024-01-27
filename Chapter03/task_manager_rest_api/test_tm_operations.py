@@ -1,10 +1,9 @@
-from modeltasks import Task, TaskWithID
-from operations import (
+from tm_models import Task, TaskWithID
+from tm_operations import (
     create_task,
     get_next_id,
     modify_task,
     read_all_tasks,
-    read_csv,
     read_task,
     remove_task,
     write_task_into_csv,
@@ -14,8 +13,14 @@ from conftest import TEST_TASKS_CSV
 # Constants for testing
 
 
-def test_read_csv():
-    assert read_csv() == TEST_TASKS_CSV
+# def test_read_csv():
+#    assert read_csv() == TEST_TASKS_CSV
+
+
+def test_read_all_tasks():
+    assert read_all_tasks() == [
+        TaskWithID(**task) for task in TEST_TASKS_CSV
+    ]
 
 
 def test_get_next_id():
@@ -30,13 +35,18 @@ def test_write_task_into_csv():
         status="Open",
     )
     write_task_into_csv(task)
-    assert read_csv() == TEST_TASKS_CSV + [
-        {
-            "id": "3",
-            "title": "New Task",
-            "description": "New Desc",
-            "status": "Open",
-        }
+    assert read_all_tasks() == list(
+        map(
+            lambda task: TaskWithID(**task),
+            TEST_TASKS_CSV,
+        )
+    ) + [
+        TaskWithID(
+            id=3,
+            title="New Task",
+            description="New Desc",
+            status="Open",
+        )
     ]
 
 
@@ -53,12 +63,6 @@ def test_create_task():
     assert read_task(3) == TaskWithID(
         id=3, **task.model_dump()
     )
-
-
-def test_read_all_tasks():
-    assert read_all_tasks() == [
-        TaskWithID(**task) for task in TEST_TASKS_CSV
-    ]
 
 
 def test_read_task():

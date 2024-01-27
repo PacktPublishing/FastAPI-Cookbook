@@ -6,7 +6,7 @@ from fastapi import (
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse
-from models import Book
+from bookstore_models import Book
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
