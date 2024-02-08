@@ -29,12 +29,12 @@ TEST_TASKS = [
 
 
 @pytest.fixture(autouse=True)
-def create_test_daabase():
+def create_test_database():
     database_file_location = str(
         Path(__file__).parent / TEST_DATABASE_FILE
     )
     with patch(
-        "tm_operations.DATABASE_FILENAME",
+        f"{__package__}.operations.DATABASE_FILENAME",
         database_file_location,
     ) as csv_test:
         with open(

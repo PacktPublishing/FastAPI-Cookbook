@@ -1,5 +1,5 @@
-from tm_models import Task, TaskWithID
-from tm_operations import (
+from models import Task, TaskWithID
+from operations import (
     create_task,
     get_next_id,
     modify_task,
@@ -9,12 +9,6 @@ from tm_operations import (
     write_task_into_csv,
 )
 from conftest import TEST_TASKS_CSV
-
-# Constants for testing
-
-
-# def test_read_csv():
-#    assert read_csv() == TEST_TASKS_CSV
 
 
 def test_read_all_tasks():

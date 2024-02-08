@@ -1,8 +1,8 @@
-from tm_main import app
-
-from fastapi.testclient import TestClient
-from tm_operations import read_all_tasks, read_task
 from conftest import TEST_TASKS
+from fastapi.testclient import TestClient
+
+from main import app
+from operations import read_all_tasks, read_task
 
 client = TestClient(app)
 

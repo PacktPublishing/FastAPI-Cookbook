@@ -6,9 +6,10 @@ from fastapi import (
 )
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse
-from bookstore_models import Book
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
+
+from .models import Book
 
 app = FastAPI()
 

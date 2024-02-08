@@ -4,8 +4,8 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
-from tm_models import Task, TaskWithID, TaskV2WithID
-from tm_operations import (
+from .models import Task, TaskWithID, TaskV2WithID
+from .operations import (
     create_task,
     modify_task,
     read_all_tasks,
@@ -13,7 +13,7 @@ from tm_operations import (
     remove_task,
     read_all_tasks_v2,
 )
-from tm_security import (
+from .security import (
     User,
     UserInDB,
     fakely_hash_password,
