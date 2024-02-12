@@ -1,7 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app, get_session
+from main import app
+from models import get_session
 
 
 @pytest.fixture

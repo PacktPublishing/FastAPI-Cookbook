@@ -47,7 +47,7 @@ def create_access_token(data: dict) -> str:
 
 
 def decode_access_token(
-    token: str, session: Session
+    token: str, db_session: Session
 ) -> User | None:
     try:
         payload = jwt.decode(
@@ -58,5 +58,5 @@ def decode_access_token(
         return
     if not username:
         return
-    user = get_user(session, username)
+    user = get_user(db_session, username)
     return user

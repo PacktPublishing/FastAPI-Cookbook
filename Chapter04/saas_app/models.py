@@ -29,7 +29,8 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    role = Column(SQLEnum(Role))
+    role = Column(SQLEnum(Role), default="basic")
+    totp_secret = Column(String, nullable=True)
 
 
 Base.metadata.create_all(bind=engine)
@@ -37,3 +38,11 @@ Base.metadata.create_all(bind=engine)
 SessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine
 )
+
+
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
