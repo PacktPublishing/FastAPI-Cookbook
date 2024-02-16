@@ -34,7 +34,7 @@ def create_test_database():
         Path(__file__).parent / TEST_DATABASE_FILE
     )
     with patch(
-        f"{__package__}.operations.DATABASE_FILENAME",
+        "operations.DATABASE_FILENAME",
         database_file_location,
     ) as csv_test:
         with open(
