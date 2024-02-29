@@ -1,5 +1,9 @@
 .vscode/
 .idea/
+.env
+.coverage
+htmlcov/
+
 
 __pychache__/
 .venv/
@@ -9,6 +13,7 @@ env.bak/
 venv.bak/
 *.py[cod]
 *$py.class
+
 
 .DS_Store
 Thumbs.db
