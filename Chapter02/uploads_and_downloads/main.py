@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 app = FastAPI()
 
 
-@app.post("/uploadfile/")
+@app.post("/uploadfile")
 async def upload_file(
     file: UploadFile = File(...),
 ):
@@ -33,6 +33,4 @@ async def download_file(filename: str):
             detail=f"file {filename} not found",
         )
 
-    return FileResponse(
-        path=f"uploads/{filename}", filename=filename
-    )
+    return FileResponse(path=f"uploads/{filename}", filename=filename)
