@@ -1,7 +1,13 @@
-from sql_database import SessionLocal, Tweet, User
-from fastapi import Body, Depends, FastAPI, HTTPException
+from fastapi import (
+    Body,
+    Depends,
+    FastAPI,
+    HTTPException,
+)
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+from database import SessionLocal, Tweet, User
 
 app = FastAPI()
 
@@ -36,9 +42,13 @@ def add_new_user(
 
 
 @app.get("/user")
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(
+    user_id: int, db: Session = Depends(get_db)
+):
     user = (
-        db.query(User).filter(User.id == user_id).first()
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
     )
     if user is None:
         raise HTTPException(
@@ -55,7 +65,9 @@ def update_user(
     db: Session = Depends(get_db),
 ):
     db_user = (
-        db.query(User).filter(User.id == user_id).first()
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
     )
     if db_user is None:
         raise HTTPException(
@@ -73,7 +85,9 @@ def delete_user(
     user_id: int, db: Session = Depends(get_db)
 ):
     db_user = (
-        db.query(User).filter(User.id == user_id).first()
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
     )
     if db_user is None:
         raise HTTPException(
@@ -91,14 +105,18 @@ def publish_tweet(
     db: Session = Depends(get_db),
 ):
     db_user = (
-        db.query(User).filter(User.id == user_id).first()
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
     )
     if db_user is None:
         raise HTTPException(
             status_code=404, detail="User not found"
         )
 
-    tweet = Tweet(content=tweet_content, user_id=user_id)
+    tweet = Tweet(
+        content=tweet_content, user_id=user_id
+    )
     db.add(tweet)
     db.commit()
 
