@@ -1,7 +1,8 @@
 fastapi[all]
 
-sqlalchemy
+sqlalchemy >= 2.0.0
 aiosqlite
 
 pytest
 pytest-asyncio
+alembic
