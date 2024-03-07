@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import Column, Float, ForeignKey, Table
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     create_async_engine,
@@ -74,3 +74,40 @@ class Event(Base):
     tickets: Mapped[list["Ticket"]] = relationship(
         back_populates="event"
     )
+    sponsors: Mapped[list["Sponsor"]] = relationship(
+        secondary="sponsorships",
+        back_populates="events",
+    )
+
+
+class Sponsor(Base):
+    __tablename__ = "sponsors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    events: Mapped[list["Event"]] = relationship(
+        secondary="sponsorships",
+        back_populates="sponsors",
+    )
+
+
+Sponsorship = Table(
+    "sponsorships",
+    Base.metadata,
+    Column(
+        "event_id",
+        ForeignKey("events.id"),
+        primary_key=True,
+    ),
+    Column(
+        "sponsor_id",
+        ForeignKey("sponsors.id"),
+        primary_key=True,
+    ),
+    Column(
+        "amount",
+        Float,
+        nullable=False,
+        default=10,
+    ),
+)

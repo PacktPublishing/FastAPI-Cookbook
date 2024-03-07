@@ -1,9 +1,16 @@
-from sqlalchemy import delete, update
+from sqlalchemy import delete, text, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from app.database import Event, Ticket, TicketDetails
+from app.database import (
+    Event,
+    Sponsor,
+    Sponsorship,
+    Ticket,
+    TicketDetails,
+)
 
 
 async def get_ticket(
@@ -123,3 +130,44 @@ async def create_event(
         db_session.add_all(tickets)
         await db_session.commit()
     return event_id
+
+
+async def create_sponsor(
+    db_session: AsyncSession,
+    sponsor_name: str,
+) -> int:
+    async with db_session.begin():
+        sponsor = Sponsor(name=sponsor_name)
+        db_session.add(sponsor)
+        try:
+            await db_session.flush()
+        except IntegrityError:
+            return
+        sponsor_id = sponsor.id
+        await db_session.commit()
+    return sponsor_id
+
+
+async def add_sponsor_to_event(
+    db_session: AsyncSession,
+    event_id: int,
+    sponsor_id: int,
+    amount: float,
+) -> bool:
+    query = text(
+        "INSERT OR REPLACE INTO "
+        "sponsorships (event_id, sponsor_id, amount) "
+        "VALUES (:event_id, :sponsor_id, :amount)"
+    )
+    params = {
+        "event_id": event_id,
+        "sponsor_id": sponsor_id,
+        "amount": amount,
+    }
+
+    async with db_session.begin():
+        result = await db_session.execute(query, params)
+        await db_session.commit()
+        if result.rowcount == 0:
+            return False
+    return True

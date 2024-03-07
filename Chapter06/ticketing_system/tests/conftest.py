@@ -6,7 +6,14 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, Ticket, TicketDetails
+from app.database import (
+    Base,
+    Event,
+    Sponsor,
+    Sponsorship,
+    Ticket,
+    TicketDetails,
+)
 from app.main import app, get_db_session
 
 
@@ -48,7 +55,11 @@ async def fill_database_with_tickets(db_session_test):
 
 @pytest.fixture
 async def add_special_ticket(db_session_test):
-    ticket = Ticket(id=1234, show="Special Show", details=TicketDetails())
+    ticket = Ticket(
+        id=1234,
+        show="Special Show",
+        details=TicketDetails(),
+    )
     async with db_session_test.begin():
         db_session_test.add(ticket)
         await db_session_test.commit()
@@ -61,3 +72,26 @@ def test_client(db_session_test):
         lambda: db_session_test
     )
     return client
+
+
+@pytest.fixture
+async def add_event_and_sponsor(db_session_test):
+    event = Event(name="The Rolling Stones Concert")
+    sponsor = Sponsor(name="Live Nation")
+    async with db_session_test.begin():
+        db_session_test.add(event)
+        db_session_test.add(sponsor)
+        await db_session_test.commit()
+
+
+@pytest.fixture
+async def add_event_and_sponsor_and_sponsorship(
+    db_session_test, add_event_and_sponsor
+):
+    async with db_session_test.begin():
+        await db_session_test.execute(
+            Sponsorship.insert().values(
+                event_id=1, sponsor_id=1
+            )
+        )
+        await db_session_test.commit()

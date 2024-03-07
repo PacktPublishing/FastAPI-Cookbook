@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import AsyncSessionLocal, Base, engine
 from app.operations import (
+    add_sponsor_to_event,
     create_event,
+    create_sponsor,
     create_ticket,
     delete_ticket,
     get_all_tickets_for_show,
@@ -69,7 +71,7 @@ class TicketDetailsUpateRequest(BaseModel):
 
 
 class TicketUpdateRequest(BaseModel):
-    price: float | None = None
+    price: float | None = Field(None, ge=0)
     details: TicketDetailsUpateRequest | None = None
 
 
@@ -134,3 +136,52 @@ async def create_event_route(
         db_session, event_name, nb_tickets
     )
     return {"event_id": event_id}
+
+
+@app.post(
+    "/sponsor/{sponsor_name}",
+    response_model=dict[str, int],
+    responses={
+        200: {
+            "description": "Successful Response",
+            "content": {
+                "application/json": {
+                    "example": {"sponsor_id": 12345}
+                }
+            },
+        }
+    },
+)
+async def register_sponsor(
+    sponsor_name: str,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    sponsor_id = await create_sponsor(
+        db_session, sponsor_name
+    )
+    if not sponsor_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Sponsor not created",
+        )
+
+    return {"sponsor_id": sponsor_id}
+
+
+@app.post("/event/{event_id}/sponsor/{sponsor_id}")
+async def register_sponsor_amount_contribution(
+    sponsor_id: int,
+    event_id: int,
+    amount: float | None = 0,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    registered = await add_sponsor_to_event(
+        db_session, event_id, sponsor_id, amount
+    )
+    if not registered:
+        raise HTTPException(
+            status_code=400,
+            detail="Contribution not registered",
+        )
+
+    return {"detail": "Contribution registered"}

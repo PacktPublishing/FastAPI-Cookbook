@@ -2,8 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from app.database import Event, Ticket
+from app.database import Event, Sponsorship, Ticket
 from app.operations import (
+    add_sponsor_to_event,
     create_event,
     create_ticket,
     delete_ticket,
@@ -145,3 +146,38 @@ async def test_create_event_with_10_tickets(
     assert event.name == "Event 2"
     assert len(event.tickets) == 10
     assert event.tickets[0].show == "Event 2"
+
+
+async def test_register_sponsorship(
+    add_event_and_sponsor, db_session_test
+):
+    await add_sponsor_to_event(
+        db_session_test, 1, 1, 100
+    )
+    async with db_session_test as session:
+        result = await session.execute(
+            select(Event).options(
+                joinedload(Event.sponsors)
+            )
+        )
+
+        event = result.scalars().first()
+
+    assert event.sponsors[0].name == "Live Nation"
+
+
+async def test_update_sponsorship_amount(
+    add_event_and_sponsor_and_sponsorship,
+    db_session_test,
+):
+    await add_sponsor_to_event(
+        db_session_test, 1, 1, 200
+    )
+    async with db_session_test as session:
+        result = await session.execute(
+            select(Sponsorship)
+        )
+
+        sponsorship = result.mappings().all()
+
+    assert sponsorship[0]["amount"] == 200
