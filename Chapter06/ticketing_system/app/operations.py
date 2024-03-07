@@ -3,16 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from app.database import Ticket, TicketDetails
+from app.database import Event, Ticket, TicketDetails
 
 
 async def get_ticket(
     db_session: AsyncSession, ticket_id: int
 ) -> Ticket:
-    query = (
-        select(Ticket)
-        .options(joinedload(Ticket.details))
-        .where(Ticket.id == ticket_id)
+    query = select(Ticket).options(
+        joinedload(Ticket.details)
     )
     async with db_session as session:
         tickets = await session.execute(query)
@@ -102,3 +100,26 @@ async def update_ticket(
             return False
 
     return True
+
+
+async def create_event(
+    db_session: AsyncSession,
+    event_name: str,
+    nb_tickets: int | None = 0,
+) -> int:
+    async with db_session.begin():
+        event = Event(name=event_name)
+        db_session.add(event)
+        await db_session.flush()
+        event_id = event.id
+        tickets = [
+            Ticket(
+                show=event_name,
+                details=TicketDetails(seat=f"{n}A"),
+                event_id=event_id,
+            )
+            for n in range(nb_tickets)
+        ]
+        db_session.add_all(tickets)
+        await db_session.commit()
+    return event_id

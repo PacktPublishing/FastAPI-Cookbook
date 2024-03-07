@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 
-from app.database import Ticket
+from app.database import Event, Ticket
 from app.operations import (
+    create_event,
     create_ticket,
     delete_ticket,
     get_all_tickets_for_show,
@@ -11,7 +13,7 @@ from app.operations import (
 )
 
 
-async def assert_tickets_table_is_empty(  # TODO delete it
+async def assert_tickets_table_is_empty(
     db_session: AsyncSession,
 ):
     async with db_session as session:
@@ -111,3 +113,35 @@ async def test_update_ticket_details(
 
     ticket = await get_ticket(db_session_test, 1234)
     assert ticket.details.seat is None
+
+
+async def test_create_event_without_tickets(
+    db_session_test,
+):
+    await create_event(db_session_test, "Event 1")
+    async with db_session_test as session:
+        result = await session.execute(
+            select(Event).options(
+                joinedload(Event.tickets)
+            )
+        )
+        event = result.scalars().first()
+    assert event.name == "Event 1"
+    assert len(event.tickets) == 0
+
+
+async def test_create_event_with_10_tickets(
+    db_session_test,
+):
+    await create_event(db_session_test, "Event 2", 10)
+    async with db_session_test as session:
+        result = await session.execute(
+            select(Event).options(
+                joinedload(Event.tickets)
+            )
+        )
+        event = result.scalars().first()
+
+    assert event.name == "Event 2"
+    assert len(event.tickets) == 10
+    assert event.tickets[0].show == "Event 2"

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import AsyncSessionLocal, Base, engine
 from app.operations import (
+    create_event,
     create_ticket,
     delete_ticket,
     get_all_tickets_for_show,
@@ -66,6 +67,7 @@ class TicketDetailsUpateRequest(BaseModel):
     seat: str | None = None
     ticket_type: str | None = None
 
+
 class TicketUpdateRequest(BaseModel):
     price: float | None = None
     details: TicketDetailsUpateRequest | None = None
@@ -120,3 +122,15 @@ async def get_tickets_for_show(
         db_session, show
     )
     return tickets
+
+
+@app.post("/event", response_model=dict[str, int])
+async def create_event_route(
+    event_name: str,
+    nb_tickets: int | None = 0,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    event_id = await create_event(
+        db_session, event_name, nb_tickets
+    )
+    return {"event_id": event_id}

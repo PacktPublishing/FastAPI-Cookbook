@@ -1,3 +1,8 @@
+from sqlalchemy import select
+
+from app.database import Ticket
+
+
 def test_client_does_not_found_specific_ticket(
     test_client,
 ):
@@ -64,3 +69,21 @@ def test_client_get_all_tickets_for_concert(
         }
         for id_ in range(1, 11)
     ]
+
+
+def test_client_create_event(test_client):
+    request = test_client.post(
+        "/event",
+        params={
+            "event_name": "The Rolling Stones Concert",
+            "nb_tickets": 10,
+        },
+    )
+    assert request.status_code == 200
+    assert request.json() == {"event_id": 1}
+
+    request = test_client.get(
+        "/tickets/The Rolling Stones Concert"
+    )
+
+    assert len(request.json()) == 10
