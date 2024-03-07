@@ -7,7 +7,7 @@ from app.operations import (
     delete_ticket,
     get_all_tickets_for_show,
     get_ticket,
-    update_ticket_price,
+    update_ticket,
 )
 
 
@@ -50,6 +50,7 @@ async def test_get_ticket(
     add_special_ticket, db_session_test
 ):
     ticket = await get_ticket(db_session_test, 1234)
+
     assert ticket.id == 1234
     assert ticket.show == "Special Show"
 
@@ -73,8 +74,40 @@ async def test_delete_ticket(
 async def test_update_ticket_price(
     add_special_ticket, db_session_test
 ):
-    await update_ticket_price(
-        db_session_test, ticket_id=1234, price=100
+    await update_ticket(
+        db_session_test,
+        ticket_id=1234,
+        update_ticket_dict={"price": 100},
     )
     ticket = await get_ticket(db_session_test, 1234)
     assert ticket.price == 100
+
+    await update_ticket(
+        db_session_test,
+        ticket_id=1234,
+        update_ticket_dict={"price": None},
+    )
+
+    ticket = await get_ticket(db_session_test, 1234)
+    assert ticket.price is None
+
+
+async def test_update_ticket_details(
+    add_special_ticket, db_session_test
+):
+    await update_ticket(
+        db_session_test,
+        ticket_id=1234,
+        update_ticket_dict={"details": {"seat": "A1"}},
+    )
+    ticket = await get_ticket(db_session_test, 1234)
+    assert ticket.details.seat == "A1"
+
+    await update_ticket(
+        db_session_test,
+        ticket_id=1234,
+        update_ticket_dict={"details": {"seat": None}},
+    )
+
+    ticket = await get_ticket(db_session_test, 1234)
+    assert ticket.details.seat is None

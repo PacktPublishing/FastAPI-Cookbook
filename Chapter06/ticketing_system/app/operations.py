@@ -1,19 +1,21 @@
 from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 
-from app.database import Ticket
+from app.database import Ticket, TicketDetails
 
 
 async def get_ticket(
     db_session: AsyncSession, ticket_id: int
 ) -> Ticket:
+    query = (
+        select(Ticket)
+        .options(joinedload(Ticket.details))
+        .where(Ticket.id == ticket_id)
+    )
     async with db_session as session:
-        tickets = await session.execute(
-            select(Ticket).filter(
-                Ticket.id == ticket_id
-            )
-        )
+        tickets = await session.execute(query)
         return tickets.scalars().first()
 
 
@@ -25,7 +27,10 @@ async def create_ticket(
 ) -> int:
     async with db_session.begin():
         ticket = Ticket(
-            show=show_name, user=user, price=price
+            show=show_name,
+            user=user,
+            price=price,
+            details=TicketDetails(),
         )
         db_session.add(ticket)
         await db_session.flush()
@@ -59,19 +64,41 @@ async def delete_ticket(
         return True
 
 
-async def update_ticket_price(
+async def update_ticket(
     db_session: AsyncSession,
     ticket_id: int,
-    price: float,
+    update_ticket_dict: dict,
 ) -> bool:
-    async with db_session as session:
-        result = await db_session.execute(
-            update(Ticket)
-            .where(Ticket.id == ticket_id)
-            .values(price=price)
+    ticket_query = update(Ticket).where(
+        Ticket.id == ticket_id
+    )
+    if "price" in update_ticket_dict.keys():
+        ticket_query = ticket_query.values(
+            price=update_ticket_dict["price"]
         )
-        await session.commit()
-
+        result = await db_session.execute(ticket_query)
         if result.rowcount == 0:
             return False
-        return True
+
+    if "details" in update_ticket_dict.keys():
+        # update ticket details
+        details = update_ticket_dict["details"]
+
+        details_query = update(TicketDetails).where(
+            TicketDetails.ticket_id == ticket_id
+        )
+
+        if "seat" in details.keys():
+            details_query = details_query.values(
+                seat=details["seat"]
+            )
+        if "ticket_type" in details.keys():
+            details_query = details_query.values(
+                ticket_type=details["ticket_type"]
+            )
+
+        result = await db_session.execute(details_query)
+        if result.rowcount == 0:
+            return False
+
+    return True

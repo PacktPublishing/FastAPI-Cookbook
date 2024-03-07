@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import sessionmaker
 
-from app.database import Base, Ticket
+from app.database import Base, Ticket, TicketDetails
 from app.main import app, get_db_session
 
 
@@ -48,7 +48,7 @@ async def fill_database_with_tickets(db_session_test):
 
 @pytest.fixture
 async def add_special_ticket(db_session_test):
-    ticket = Ticket(id=1234, show="Special Show")
+    ticket = Ticket(id=1234, show="Special Show", details=TicketDetails())
     async with db_session_test.begin():
         db_session_test.add(ticket)
         await db_session_test.commit()

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import ForeignKey
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -40,8 +38,8 @@ class Ticket(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     price: Mapped[float] = mapped_column(nullable=True)
-    show: Mapped[Optional[str]]
-    user: Mapped[Optional[str]]
+    show: Mapped[str | None]
+    user: Mapped[str | None]
     sold: Mapped[bool] = mapped_column(default=False)
     details: Mapped["TicketDetails"] = relationship(
         back_populates="ticket"
@@ -58,5 +56,5 @@ class TicketDetails(Base):
     ticket: Mapped["Ticket"] = relationship(
         "Ticket", back_populates="details"
     )
-    seat: Mapped[Optional[str]]
-    ticket_type: Mapped[Optional[str]]
+    seat: Mapped[str | None]
+    ticket_type: Mapped[str | None]

@@ -10,7 +10,7 @@ from app.operations import (
     delete_ticket,
     get_all_tickets_for_show,
     get_ticket,
-    update_ticket_price,
+    update_ticket,
 )
 
 
@@ -49,7 +49,7 @@ class TicketRequest(BaseModel):
 
 
 @app.post("/ticket", response_model=dict[str, int])
-async def post_ticket(
+async def create_ticket_route(
     ticket: TicketRequest,
     db_session: AsyncSession = Depends(get_db_session),
 ):
@@ -62,14 +62,27 @@ async def post_ticket(
     return {"ticket_id": ticket_id}
 
 
+class TicketDetailsUpateRequest(BaseModel):
+    seat: str | None = None
+    ticket_type: str | None = None
+
+class TicketUpdateRequest(BaseModel):
+    price: float | None = None
+    details: TicketDetailsUpateRequest | None = None
+
+
 @app.put("/ticket/{ticket_id}")
-async def update_ticket(
+async def update_ticket_route(
     ticket_id: int,
-    price: float,
+    ticket_update: TicketUpdateRequest,
     db_session: AsyncSession = Depends(get_db_session),
 ):
-    updated = await update_ticket_price(
-        db_session, ticket_id, price
+    update_dict_args = ticket_update.model_dump(
+        exclude_unset=True
+    )
+
+    updated = await update_ticket(
+        db_session, ticket_id, update_dict_args
     )
     if not updated:
         raise HTTPException(
@@ -90,8 +103,10 @@ async def delete_ticket_route(
         )
     return {"detail": "Ticket removed"}
 
+
 class TicketResponse(TicketRequest):
     id: int
+
 
 @app.get(
     "/tickets/{show}",

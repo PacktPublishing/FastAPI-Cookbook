@@ -27,7 +27,7 @@ def test_client_update_ticket_price(
     test_client, add_special_ticket
 ):
     request = test_client.put(
-        "/ticket/1234", params={"price": 250.0}
+        "/ticket/1234", json={"price": 250.0}
     )
     assert request.status_code == 200
     assert request.json() == {"detail": "Price updated"}

@@ -37,6 +37,10 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.execute("""
+        INSERT INTO ticket_details (ticket_id)
+        SELECT id FROM tickets
+    """)
     # ### end Alembic commands ###
 
 
