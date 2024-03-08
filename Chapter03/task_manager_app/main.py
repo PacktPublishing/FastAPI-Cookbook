@@ -127,7 +127,7 @@ def search_tasks(keyword: str):
     return filtered_tasks
 
 
-@app.get("/tasks", response_model=list[TaskV2WithID])
+@app.get("/v2/tasks", response_model=list[TaskV2WithID])
 def get_tasks_v2():
     tasks = read_all_tasks_v2()
     return tasks
@@ -165,5 +165,4 @@ async def login(
 def read_users_me(
     current_user: User = Depends(get_user_from_token),
 ):
-    return current_user
     return current_user
