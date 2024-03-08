@@ -1,6 +1,8 @@
-from math import exp
 from sqlalchemy import and_, delete, text, update
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import (
+    IntegrityError,
+    OperationalError,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload, selectinload
@@ -78,46 +80,43 @@ async def update_ticket(
         Ticket.id == ticket_id
     )
 
-    if "user" in update_ticket_dict.keys():
+    updating_ticket_values = update_ticket_dict.copy()
+    updating_details_values = (
+        updating_ticket_values.pop("details", None)
+    )
+
+    if updating_ticket_values != {}:
         ticket_query = ticket_query.values(
-            user=update_ticket_dict["user"],
+            **updating_ticket_values
         )
 
-    if "sold" in update_ticket_dict.keys():
-        ticket_query = ticket_query.values(
-            sold=update_ticket_dict["sold"],
-        )
-
-    if "price" in update_ticket_dict.keys():
-        ticket_query = ticket_query.values(
-            price=update_ticket_dict["price"]
-        )
-
-    try:
-        result = await db_session.execute(ticket_query)
-    except OperationalError:
-        await db_session.rollback()
-        return False
-
-    if "details" in update_ticket_dict.keys():
-        # update ticket details
-        details = update_ticket_dict["details"]
-
-        details_query = update(TicketDetails).where(
-            TicketDetails.ticket_id == ticket_id
-        )
-
-        if "seat" in details.keys():
-            details_query = details_query.values(
-                seat=details["seat"]
+        try:
+            result = await db_session.execute(
+                ticket_query
             )
-        if "ticket_type" in details.keys():
-            details_query = details_query.values(
-                ticket_type=details["ticket_type"]
-            )
+            await db_session.commit()
+            if result.rowcount == 0:
+                return False
+        except OperationalError as e:
+            await db_session.rollback()
+            return False
 
-        result = await db_session.execute(details_query)
-        if result.rowcount == 0:
+    if updating_details_values is not None:
+        details_query = (
+            update(TicketDetails)
+            .where(TicketDetails.ticket_id == ticket_id)
+            .values(**updating_details_values)
+        )
+
+        try:
+            result = await db_session.execute(
+                details_query
+            )
+            await db_session.commit()
+            if result.rowcount == 0:
+                return False
+        except OperationalError as e:
+            await db_session.rollback()
             return False
 
     return True
@@ -219,9 +218,9 @@ async def sell_ticket_to_user(
     try:
         result = await db_session.execute(ticket_query)
         await db_session.commit()
+        if result.rowcount == 0:
+            return False
     except OperationalError:
         await db_session.rollback()
         return False
-    if result.rowcount == 0:
-        return False
-    return False
+    return True

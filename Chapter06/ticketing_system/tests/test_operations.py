@@ -21,8 +21,8 @@ from app.operations import (
 async def assert_tickets_table_is_empty(
     db_session: AsyncSession,
 ):
-    (sell_ticket_to_user,)
-    (update_ticket,)
+    async with db_session as session:
+        result = await session.execute(select(Ticket))
     assert result.all() == []
 
 
@@ -237,4 +237,16 @@ async def test_concurrent_ticket_sales(
         ),
     )
 
-    assert result
+    assert result in (
+        [True, False],
+        [False, True],
+    )  # only one of the sales should be successful
+
+    ticket = await get_ticket(db_session_test, 1234)
+
+    # assert that the user who bought the ticket
+    # correspond to the successful sale
+    if result[0]:
+        assert ticket.user == "Jake Fake"
+    else:
+        assert ticket.user == "John Doe"
