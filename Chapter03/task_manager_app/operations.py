@@ -1,7 +1,7 @@
 import csv
 from typing import Optional
 
-from models import Task, TaskWithID, TaskV2WithID
+from models import Task, TaskV2WithID, TaskWithID
 
 DATABASE_FILENAME = "tasks.csv"
 
@@ -30,7 +30,9 @@ def get_next_id():
     try:
         with open(DATABASE_FILENAME, "r") as csvfile:
             reader = csv.DictReader(csvfile)
-            max_id = max(int(row["id"]) for row in reader)
+            max_id = max(
+                int(row["id"]) for row in reader
+            )
             return max_id + 1
     except (FileNotFoundError, ValueError):
         return 1
@@ -49,7 +51,9 @@ def write_task_into_csv(task: TaskWithID):
 
 def create_task(task: Task) -> TaskWithID:
     id = get_next_id()
-    task_with_id = TaskWithID(id=id, **task.model_dump())
+    task_with_id = TaskWithID(
+        id=id, **task.model_dump()
+    )
     write_task_into_csv(task_with_id)
     return task_with_id
 
@@ -61,9 +65,9 @@ def modify_task(
     tasks = read_all_tasks()
     for number, task_ in enumerate(tasks):
         if task_.id == id:
-            tasks[number] = (
-                updated_task
-            ) = task_.model_copy(update=task)
+            tasks[number] = updated_task = (
+                task_.model_copy(update=task)
+            )
     with open(
         DATABASE_FILENAME, mode="w", newline=""
     ) as csvfile:  # rewrite the file

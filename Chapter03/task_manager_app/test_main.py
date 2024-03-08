@@ -74,9 +74,7 @@ def test_endpoint_get_tasks_with_filters():
 
 
 def test_endpoint_search_task_by_keyword():
-    response = client.get(
-        "/tasks/search", params={"keyword": "ONE"}
-    )
+    response = client.get("/tasks/search", params={"keyword": "ONE"})
 
     assert response.status_code == 200
     assert response.json() == [TEST_TASKS[0]]

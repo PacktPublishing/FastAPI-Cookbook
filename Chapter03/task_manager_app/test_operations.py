@@ -1,3 +1,4 @@
+from conftest import TEST_TASKS_CSV
 from models import Task, TaskWithID
 from operations import (
     create_task,
@@ -8,7 +9,6 @@ from operations import (
     remove_task,
     write_task_into_csv,
 )
-from conftest import TEST_TASKS_CSV
 
 
 def test_read_all_tasks():
@@ -60,7 +60,9 @@ def test_create_task():
 
 
 def test_read_task():
-    assert read_task(1) == TaskWithID(**TEST_TASKS_CSV[0])
+    assert read_task(1) == TaskWithID(
+        **TEST_TASKS_CSV[0]
+    )
 
 
 def test_modify_task():
