@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import BaseModel
 
 
@@ -16,7 +15,7 @@ class TaskV2(BaseModel):
     title: str
     description: str
     status: str
-    priority: Optional[str]
+    priority: str | None = "low"
 
 
 class TaskV2WithID(TaskV2):
