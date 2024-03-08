@@ -43,6 +43,16 @@ async def db_session_test(
 
 
 @pytest.fixture
+async def second_session_test(
+    db_engine_test,
+):
+    TestingAsynSessionLocal = sessionmaker(
+        bind=db_engine_test, class_=AsyncSession
+    )
+    async with TestingAsynSessionLocal() as session:
+        yield session
+
+@pytest.fixture
 async def fill_database_with_tickets(db_session_test):
     tickets = [
         Ticket(show="The Rolling Stones Concert")
@@ -63,6 +73,20 @@ async def add_special_ticket(db_session_test):
     async with db_session_test.begin():
         db_session_test.add(ticket)
         await db_session_test.commit()
+
+@pytest.fixture
+async def add_special_sold_ticket(db_session_test):
+    ticket = Ticket(
+        id=1234,
+        show="Special Show",
+        details=TicketDetails(),
+        sold=True,
+        user="John Doe"
+    )
+    async with db_session_test.begin():
+        db_session_test.add(ticket)
+        await db_session_test.commit()
+
 
 
 @pytest.fixture

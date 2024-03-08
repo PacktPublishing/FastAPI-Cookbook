@@ -1,13 +1,13 @@
-from sqlalchemy import delete, text, update
-from sqlalchemy.exc import IntegrityError
+from math import exp
+from sqlalchemy import and_, delete, text, update
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.database import (
     Event,
     Sponsor,
-    Sponsorship,
     Ticket,
     TicketDetails,
 )
@@ -77,13 +77,27 @@ async def update_ticket(
     ticket_query = update(Ticket).where(
         Ticket.id == ticket_id
     )
+
+    if "user" in update_ticket_dict.keys():
+        ticket_query = ticket_query.values(
+            user=update_ticket_dict["user"],
+        )
+
+    if "sold" in update_ticket_dict.keys():
+        ticket_query = ticket_query.values(
+            sold=update_ticket_dict["sold"],
+        )
+
     if "price" in update_ticket_dict.keys():
         ticket_query = ticket_query.values(
             price=update_ticket_dict["price"]
         )
+
+    try:
         result = await db_session.execute(ticket_query)
-        if result.rowcount == 0:
-            return False
+    except OperationalError:
+        await db_session.rollback()
+        return False
 
     if "details" in update_ticket_dict.keys():
         # update ticket details
@@ -171,3 +185,43 @@ async def add_sponsor_to_event(
         if result.rowcount == 0:
             return False
     return True
+
+
+async def get_event(
+    db_session: AsyncSession, event_id: int
+) -> Event | None:
+    query = (
+        select(Event)
+        .where(Event.id == event_id)
+        .options(selectinload(Event.sponsors))
+    )
+    async with db_session as session:
+        result = await session.execute(query)
+        event = result.scalars().first()
+
+    return event
+
+
+async def sell_ticket_to_user(
+    db_session: AsyncSession, ticket_id: int, user: str
+) -> bool:
+    ticket_query = (
+        update(Ticket)
+        .where(
+            and_(
+                Ticket.id == ticket_id,
+                Ticket.sold == False,
+            )
+        )
+        .values(user=user, sold=True)
+    )
+
+    try:
+        result = await db_session.execute(ticket_query)
+        await db_session.commit()
+    except OperationalError:
+        await db_session.rollback()
+        return False
+    if result.rowcount == 0:
+        return False
+    return False

@@ -1,3 +1,5 @@
+import asyncio
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
@@ -9,7 +11,9 @@ from app.operations import (
     create_ticket,
     delete_ticket,
     get_all_tickets_for_show,
+    get_event,
     get_ticket,
+    sell_ticket_to_user,
     update_ticket,
 )
 
@@ -17,8 +21,8 @@ from app.operations import (
 async def assert_tickets_table_is_empty(
     db_session: AsyncSession,
 ):
-    async with db_session as session:
-        result = await session.execute(select(Ticket))
+    (sell_ticket_to_user,)
+    (update_ticket,)
     assert result.all() == []
 
 
@@ -116,6 +120,34 @@ async def test_update_ticket_details(
     assert ticket.details.seat is None
 
 
+async def test_update_ticket_sell_to_user(
+    add_special_ticket, db_session_test
+):
+    await sell_ticket_to_user(
+        db_session_test,
+        ticket_id=1234,
+        user="John",
+    )
+    ticket = await get_ticket(db_session_test, 1234)
+    assert ticket.user == "John"
+    assert ticket.sold is True
+
+
+async def test_ticket_cannot_sell_sold_ticket(
+    add_special_sold_ticket, db_session_test
+):
+    result = await sell_ticket_to_user(
+        db_session_test,
+        ticket_id=1234,
+        user="Jake Fake",
+    )
+
+    assert result is False
+    ticket = await get_ticket(db_session_test, 1234)
+    assert ticket.sold is True
+    assert ticket.user == "John Doe"
+
+
 async def test_create_event_without_tickets(
     db_session_test,
 ):
@@ -181,3 +213,28 @@ async def test_update_sponsorship_amount(
         sponsorship = result.mappings().all()
 
     assert sponsorship[0]["amount"] == 200
+
+
+async def test_get_event_with_sponsors(
+    add_event_and_sponsor_and_sponsorship,
+    db_session_test,
+):
+    event = await get_event(db_session_test, 1)
+    assert event.sponsors[0].name == "Live Nation"
+
+
+async def test_concurrent_ticket_sales(
+    add_special_ticket,
+    db_session_test,
+    second_session_test,
+):
+    result = await asyncio.gather(
+        sell_ticket_to_user(
+            db_session_test, 1234, "Jake Fake"
+        ),
+        sell_ticket_to_user(
+            second_session_test, 1234, "John Doe"
+        ),
+    )
+
+    assert result
