@@ -52,7 +52,3 @@ async def github_callback(code: str):
         "access_token": access_token,
         "token_type": token_type,
     }
-    return {
-        "access_token": access_token,
-        "token_type": token_type,
-    }
