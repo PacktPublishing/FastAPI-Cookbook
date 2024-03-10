@@ -1,37 +1,21 @@
-from typing import Annotated
-
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
     status,
 )
-from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
 from db_connection import get_session
 from models import Role
 from operations import add_user
+from responses import (
+    ResponseCreateUser,
+    UserCreateBody,
+    UserCreateResponse,
+)
 
 router = APIRouter()
-
-
-class UserCreate(BaseModel):
-    username: str
-    email: EmailStr
-
-
-class ResponseCreateUser(BaseModel):
-    message: Annotated[
-        str, Field(default="user created")
-    ]
-    user: UserCreate
-
-
-class UserCreateBody(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
 
 
 @router.post(
@@ -50,7 +34,7 @@ class UserCreateBody(BaseModel):
 def register_premium_user(
     user: UserCreateBody,
     session: Session = Depends(get_session),
-) -> dict[str, UserCreate]:
+) -> dict[str, UserCreateResponse]:
     user = add_user(
         session=session,
         **user.model_dump(),
@@ -61,7 +45,7 @@ def register_premium_user(
             status.HTTP_409_CONFLICT,
             "username or email already exists",
         )
-    user_response = UserCreate(
+    user_response = UserCreateResponse(
         username=user.username,
         email=user.email,
     )
@@ -69,5 +53,3 @@ def register_premium_user(
         "message": "user created",
         "user": user_response,
     }
-
-

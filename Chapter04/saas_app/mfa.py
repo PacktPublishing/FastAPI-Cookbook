@@ -1,11 +1,16 @@
 import pyotp
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
 from sqlalchemy.orm import Session
 
 from db_connection import get_session
 from operations import get_user
 from rabc import get_current_user
+from responses import UserCreateResponse
 
 
 def generate_totp_secret():
@@ -17,11 +22,8 @@ def generate_totp_uri(secret, user_email):
         name=user_email, issuer_name="YourAppName"
     )
 
-router=APIRouter()
 
-class UserCreateResponse(BaseModel):
-    username: str
-    email: EmailStr
+router = APIRouter()
 
 
 @router.post("/user/enable-mfa")
@@ -69,5 +71,4 @@ def verify_totp(
     # or performing the sensitive operation
     return {
         "message": "TOTP token verified successfully"
-    }
     }

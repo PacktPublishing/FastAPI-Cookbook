@@ -1,8 +1,14 @@
-from fastapi import HTTPException, status, APIRouter
-from security import Token
-from third_party_login import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_REDIRECT_URI
+from fastapi import APIRouter, HTTPException, status
 
-router= APIRouter()
+from security import Token
+from third_party_login import (
+    GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET,
+    GITHUB_REDIRECT_URI,
+)
+
+router = APIRouter()
+
 
 @router.get("/auth/url")
 def github_login():
@@ -42,6 +48,10 @@ async def github_callback(code: str):
         "token_type", "bearer"
     )
 
+    return {
+        "access_token": access_token,
+        "token_type": token_type,
+    }
     return {
         "access_token": access_token,
         "token_type": token_type,
