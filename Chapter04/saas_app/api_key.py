@@ -1,5 +1,6 @@
-from fastapi import HTTPException
 from typing import Optional
+
+from fastapi import HTTPException
 
 VALID_API_KEYS = [
     "verysecureapikey",

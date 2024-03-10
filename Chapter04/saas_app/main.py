@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Annotated
 
 import httpx
@@ -12,7 +13,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
-from models import Role, get_session
+from models import Base, Role, get_engine, get_session
 from operations import add_user, get_user
 from security import (
     authenticate_user,
@@ -27,7 +28,16 @@ from third_party_login import (
     resolve_github_token,
 )
 
-app = FastAPI(title="Saas application")
+
+@contextmanager
+def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=get_engine())
+    yield
+
+
+app = FastAPI(
+    title="Saas application", lifespan=lifespan
+)
 
 
 class UserCreateBody(BaseModel):
@@ -62,7 +72,9 @@ def register(
     user: UserCreateBody,
     session: Session = Depends(get_session),
 ) -> dict[str, UserCreateResponse]:
-    user = add_user(session=session, **user.model_dump())
+    user = add_user(
+        session=session, **user.model_dump()
+    )
     if not user:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -275,7 +287,8 @@ async def github_callback(code: str):
     access_token = token_response.get("access_token")
     if not access_token:
         raise HTTPException(
-            status_code=401, detail="User not registered"
+            status_code=401,
+            detail="User not registered",
         )
     token_type = token_response.get(
         "token_type", "bearer"
@@ -305,6 +318,7 @@ def homepage(
 
 app.include_router(router, prefix="/github")
 
+
 import pyotp
 
 from mfa import generate_totp_secret, generate_totp_uri
@@ -312,7 +326,9 @@ from mfa import generate_totp_secret, generate_totp_uri
 
 @app.post("/user/enable-mfa")
 def enable_mfa(
-    user: UserCreateResponse = Depends(get_current_user),
+    user: UserCreateResponse = Depends(
+        get_current_user
+    ),
     db_session: Session = Depends(get_session),
 ):
     secret = generate_totp_secret()
@@ -372,7 +388,9 @@ from fastapi import Response
 @app.post("/login")
 async def login(
     response: Response,
-    user: UserCreateResponse = Depends(get_current_user),
+    user: UserCreateResponse = Depends(
+        get_current_user
+    ),
     session: Session = Depends(get_session),
 ):
     user = get_user(session, user.username)
@@ -386,9 +404,12 @@ async def login(
 @app.post("/logout")
 async def logout(
     response: Response,
-    user: UserCreateResponse = Depends(get_current_user),
+    user: UserCreateResponse = Depends(
+        get_current_user
+    ),
 ):
     response.delete_cookie(
         "fakesession"
     )  # Clear session data
+    return {"message": "User logged out successfully"}
     return {"message": "User logged out successfully"}

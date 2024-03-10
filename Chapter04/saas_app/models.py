@@ -1,21 +1,27 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    create_engine,
-    Enum as SQLEnum,
-)
-from sqlalchemy.orm import declarative_base, sessionmaker
 from enum import Enum
+from functools import lru_cache
 
-SQLALCHEMY_DATABASE_URL = f"sqlite:///database.db"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
+from sqlalchemy import create_engine
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    sessionmaker,
 )
 
-Base = declarative_base()
+SQLALCHEMY_DATABASE_URL = "sqlite:///database.db"
+
+
+@lru_cache
+def get_engine():
+    return create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+    )
+
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Role(str, Enum):
@@ -25,24 +31,34 @@ class Role(str, Enum):
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    role = Column(SQLEnum(Role), default="basic")
-    totp_secret = Column(String, nullable=True)
-
-
-Base.metadata.create_all(bind=engine)
-
-SessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine
-)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, index=True
+    )
+    username: Mapped[str] = mapped_column(
+        unique=True, index=True
+    )
+    email: Mapped[str] = mapped_column(
+        unique=True, index=True
+    )
+    hashed_password: Mapped[str]
+    role: Mapped[Role] = mapped_column(
+        default=Role.basic
+    )
+    totp_secret: Mapped[str] = mapped_column(
+        nullable=True
+    )
 
 
 def get_session():
-    session = SessionLocal()
+    Base.metadata.create_all(bind=get_engine())
+
+    session = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=get_engine(),
+    )
     try:
         yield session
     finally:
+        session.close()
         session.close()

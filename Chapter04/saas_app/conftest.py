@@ -1,9 +1,9 @@
 import pytest
 from passlib.context import CryptContext
-from sqlalchemy import create_engine, QueuePool
+from sqlalchemy import QueuePool, create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models import Base, User, Role, SessionLocal
+from models import Base, Role, User
 
 pwd_context = CryptContext(
     schemes=["bcrypt"], deprecated="auto"
@@ -18,15 +18,15 @@ def session():
         poolclass=QueuePool,
     )
 
-    Base.metadata.create_all(bind=engine)
-
-    session_local = sessionmaker(
-        autocommit=False, autoflush=False, bind=engine
-    )
+    session_local = sessionmaker(engine)
 
     db_session = session_local()
 
+    Base.metadata.create_all(bind=engine)
+
     yield db_session
+
+    Base.metadata.drop_all(bind=engine)
 
     db_session.close()
 
