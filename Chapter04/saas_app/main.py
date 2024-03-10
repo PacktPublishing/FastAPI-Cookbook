@@ -12,15 +12,13 @@ from fastapi import (
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
+import premium_access
 import security
 from db_connection import get_engine, get_session
-from models import Base, Role
+from models import Base
 from operations import add_user, get_user
-from security import (
-    Token,
-    decode_access_token,
-    oauth2_scheme,
-)
+from rabc import get_current_user
+from security import Token
 from third_party_login import (
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
@@ -40,6 +38,7 @@ app = FastAPI(
 )
 
 app.include_router(security.router)
+app.include_router(premium_access.router)
 
 
 class UserCreateBody(BaseModel):
@@ -88,111 +87,6 @@ def register(
     return {
         "message": "user created",
         "user": user_response,
-    }
-
-
-@app.post(
-    "/register/premium-user",
-    status_code=status.HTTP_201_CREATED,
-    response_model=ResponseCreateUser,
-    responses={
-        status.HTTP_409_CONFLICT: {
-            "description": "The user already exists"
-        }
-    },
-)
-def register_premium_user(
-    user: UserCreateBody,
-    session: Session = Depends(get_session),
-) -> dict[str, UserCreateResponse]:
-    user = add_user(
-        session=session,
-        **user.model_dump(),
-        role=Role.premium,
-    )
-    if not user:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT,
-            "username or email already exists",
-        )
-    user_response = UserCreateResponse(
-        username=user.username, email=user.email
-    )
-    return {
-        "message": "user created",
-        "user": user_response,
-    }
-
-
-class UserCreateResponseWithRole(UserCreateResponse):
-    role: Role
-
-
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    session: Session = Depends(get_session),
-) -> UserCreateResponseWithRole:
-    user = decode_access_token(token, session)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not authorized",
-        )
-
-    return UserCreateResponseWithRole(
-        username=user.username,
-        email=user.email,
-        role=user.role,
-    )
-
-
-def get_premium_user(
-    current_user: UserCreateResponseWithRole = Depends(
-        get_current_user
-    ),
-):
-    if current_user.role != Role.premium:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not authorized",
-        )
-    return current_user
-
-
-@app.get(
-    "/welcome/all-users",
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "User not authorized"
-        }
-    },
-)
-def all_basic_user_can_access(
-    user: UserCreateResponseWithRole = Depends(
-        get_current_user
-    ),
-):
-    return {
-        f"Hello {user.username}, welcome to your space"
-    }
-
-
-@app.get(
-    "/welcome/premium-user",
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "User not authorized"
-        }
-    },
-)
-def only_premium_user_can_access(
-    user: UserCreateResponseWithRole = Depends(
-        get_premium_user
-    ),
-):
-    return {
-        f"Hello {user.username}, "
-        "welcome to your premium space"
     }
 
 
