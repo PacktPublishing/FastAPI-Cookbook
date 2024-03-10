@@ -1,16 +1,22 @@
 from datetime import datetime, timedelta
 
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+)
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from db_connection import get_session
 from models import User
-from operations import get_user
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"], deprecated="auto"
-)
+from operations import get_user, pwd_context
 
 
 def authenticate_user(
@@ -26,8 +32,6 @@ def authenticate_user(
         return
     return user
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = "a_very_secret_key"
 ALGORITHM = "HS256"
@@ -60,3 +64,70 @@ def decode_access_token(
         return
     user = get_user(db_session, username)
     return user
+
+
+router = APIRouter()
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+@router.post(
+    "/token",
+    response_model=Token,
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Incorrect username or password"
+        }
+    },
+)
+def get_user_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session),
+):
+    user = authenticate_user(
+        session, form_data.username, form_data.password
+    )
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    access_token = create_access_token(
+        data={"sub": user.username}
+    )
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+@router.get(
+    "/users/me",
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "User not authorized"
+        },
+        status.HTTP_200_OK: {
+            "description": "username authorized"
+        },
+    },
+)
+def read_user_me(
+    token: str = Depends(oauth2_scheme),
+    session: Session = Depends(get_session),
+):
+    user = decode_access_token(token, session)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not authorized",
+        )
+    return {
+        "description": f"{user.username} authorized",
+    }

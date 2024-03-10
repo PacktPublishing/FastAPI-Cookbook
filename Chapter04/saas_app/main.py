@@ -1,6 +1,4 @@
-from contextlib import (
-    asynccontextmanager,
-)
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 import httpx
@@ -11,16 +9,15 @@ from fastapi import (
     HTTPException,
     status,
 )
-from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
+import security
+from db_connection import get_engine, get_session
 from models import Base, Role
-from db_connection import get_session, get_engine
 from operations import add_user, get_user
 from security import (
-    authenticate_user,
-    create_access_token,
+    Token,
     decode_access_token,
     oauth2_scheme,
 )
@@ -41,6 +38,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Saas application", lifespan=lifespan
 )
+
+app.include_router(security.router)
 
 
 class UserCreateBody(BaseModel):
@@ -123,65 +122,6 @@ def register_premium_user(
         "message": "user created",
         "user": user_response,
     }
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-@app.post(
-    "/token",
-    response_model=Token,
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "Incorrect username or password"
-        }
-    },
-)
-def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(get_session),
-):
-    user = authenticate_user(
-        session, form_data.username, form_data.password
-    )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-        )
-    access_token = create_access_token(
-        data={"sub": user.username}
-    )
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-    }
-
-
-@app.get(
-    "/users/me",
-    response_model=UserCreateResponse,
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "User not authorized"
-        }
-    },
-)
-def read_user_me(
-    token: str = Depends(oauth2_scheme),
-    session: Session = Depends(get_session),
-):
-    user = decode_access_token(token, session)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not authorized",
-        )
-    return UserCreateResponse(
-        username=user.username, email=user.email
-    )
 
 
 class UserCreateResponseWithRole(UserCreateResponse):
