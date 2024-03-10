@@ -1,9 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import httpx
 from fastapi import (
-    APIRouter,
     Depends,
     FastAPI,
     HTTPException,
@@ -14,15 +12,12 @@ from sqlalchemy.orm import Session
 
 import premium_access
 import security
+import github_login
 from db_connection import get_engine, get_session
 from models import Base
 from operations import add_user, get_user
 from rabc import get_current_user
-from security import Token
 from third_party_login import (
-    GITHUB_CLIENT_ID,
-    GITHUB_CLIENT_SECRET,
-    GITHUB_REDIRECT_URI,
     resolve_github_token,
 )
 
@@ -39,7 +34,7 @@ app = FastAPI(
 
 app.include_router(security.router)
 app.include_router(premium_access.router)
-
+app.include_router(github_login.router)
 
 class UserCreateBody(BaseModel):
     username: str
@@ -90,54 +85,7 @@ def register(
     }
 
 
-router = APIRouter()
-
-
-@router.get("/auth/url")
-def github_login():
-    return {
-        "auth_url": "https://github.com/login/oauth/authorize"
-        f"?client_id={GITHUB_CLIENT_ID}"
-    }
-
-
-@router.get(
-    "/auth/token",
-    response_model=Token,
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "User not registered"
-        }
-    },
-)
-async def github_callback(code: str):
-    token_response = httpx.post(
-        "https://github.com/login/oauth/access_token",
-        data={
-            "client_id": GITHUB_CLIENT_ID,
-            "client_secret": GITHUB_CLIENT_SECRET,
-            "code": code,
-            "redirect_uri": GITHUB_REDIRECT_URI,
-        },
-        headers={"Accept": "application/json"},
-    ).json()
-    access_token = token_response.get("access_token")
-    if not access_token:
-        raise HTTPException(
-            status_code=401,
-            detail="User not registered",
-        )
-    token_type = token_response.get(
-        "token_type", "bearer"
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": token_type,
-    }
-
-
-@router.get(
+@app.get(
     "/home",
     responses={
         status.HTTP_403_FORBIDDEN: {
@@ -153,7 +101,6 @@ def homepage(
     return {"message": f"logged in {user.username} !"}
 
 
-app.include_router(router, prefix="/github")
 
 
 import pyotp
@@ -248,5 +195,4 @@ async def logout(
     response.delete_cookie(
         "fakesession"
     )  # Clear session data
-    return {"message": "User logged out successfully"}
     return {"message": "User logged out successfully"}
