@@ -1,6 +1,5 @@
 from contextlib import (
     asynccontextmanager,
-    contextmanager,
 )
 from typing import Annotated
 
@@ -16,7 +15,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
-from models import Base, Role, get_engine, get_session
+from models import Base, Role
+from db_connection import get_session, get_engine
 from operations import add_user, get_user
 from security import (
     authenticate_user,

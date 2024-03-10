@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from db_connection import get_session
 from main import app
-from models import get_session
 
 
 @pytest.fixture
@@ -32,6 +32,21 @@ def test_endpoint_add_basic_user(client):
     }
 
 
+def test_endpoint_add_user_conflict_existing_user(
+    client, fill_database_session
+):
+    user = {
+        "username": "johndoe",
+        "password": "strongpassword",
+        "email": "johndoe@email.com",
+    }
+    response = client.post("/register/user", json=user)
+    assert response.status_code == 409
+    assert response.json() == {
+        "detail": "username or email already exists"
+    }
+
+
 def test_endpoint_add_premium_user(client):
     user = {
         "username": "mariorossi",
@@ -50,16 +65,3 @@ def test_endpoint_add_premium_user(client):
     }
 
 
-def test_endpoint_add_user_conflict_existing_user(
-    client, fill_database_session
-):
-    user = {
-        "username": "johndoe",
-        "password": "strongpassword",
-        "email": "johndoe@email.com",
-    }
-    response = client.post("/register/user", json=user)
-    assert response.status_code == 409
-    assert response.json() == {
-        "detail": "username or email already exists"
-    }

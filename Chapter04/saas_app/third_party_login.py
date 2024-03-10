@@ -12,7 +12,8 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2
 from sqlalchemy.orm import Session
 
-from models import User, get_session
+from db_connection import get_session
+from models import User
 from operations import get_user
 
 
