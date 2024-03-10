@@ -50,15 +50,13 @@ class User(Base):
 
 
 def get_session():
-    Base.metadata.create_all(bind=get_engine())
-
-    session = sessionmaker(
+    Session = sessionmaker(
         autocommit=False,
         autoflush=False,
         bind=get_engine(),
     )
     try:
+        session = Session()
         yield session
     finally:
-        session.close()
         session.close()

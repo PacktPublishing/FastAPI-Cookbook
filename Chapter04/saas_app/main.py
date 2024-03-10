@@ -1,4 +1,7 @@
-from contextlib import contextmanager
+from contextlib import (
+    asynccontextmanager,
+    contextmanager,
+)
 from typing import Annotated
 
 import httpx
@@ -29,8 +32,8 @@ from third_party_login import (
 )
 
 
-@contextmanager
-def lifespan(app: FastAPI):
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=get_engine())
     yield
 
