@@ -1,19 +1,21 @@
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+)
 from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+
 from db_connection import get_session
 from models import Role
 from security import decode_access_token, oauth2_scheme
 
 
-from fastapi import Depends, HTTPException, status, APIRouter
-from sqlalchemy.orm import Session
-
-router = APIRouter()
-
 class UserCreateResponseWithRole(BaseModel):
     username: str
     email: EmailStr
     role: Role
-
 
 
 def get_current_user(
@@ -47,6 +49,9 @@ def get_premium_user(
     return current_user
 
 
+router = APIRouter()
+
+
 @router.get(
     "/welcome/all-users",
     responses={
@@ -55,7 +60,7 @@ def get_premium_user(
         }
     },
 )
-def all_basic_user_can_access(
+def all_user_can_access(
     user: UserCreateResponseWithRole = Depends(
         get_current_user
     ),
