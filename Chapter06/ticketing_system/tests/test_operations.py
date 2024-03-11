@@ -211,9 +211,9 @@ async def test_update_sponsorship_amount(
             select(Sponsorship)
         )
 
-        sponsorship = result.mappings().all()
+        sponsorship = result.scalars().first()
 
-    assert sponsorship[0]["amount"] == 200
+    assert sponsorship.amount == 200
 
 
 async def test_get_event_with_sponsors(

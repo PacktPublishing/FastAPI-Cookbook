@@ -113,10 +113,9 @@ async def add_event_and_sponsor(db_session_test):
 async def add_event_and_sponsor_and_sponsorship(
     db_session_test, add_event_and_sponsor
 ):
+    sponsorship = Sponsorship(
+        event_id=1, sponsor_id=1, amount=10
+    )
     async with db_session_test.begin():
-        await db_session_test.execute(
-            Sponsorship.insert().values(
-                event_id=1, sponsor_id=1
-            )
-        )
+        db_session_test.add(sponsorship)
         await db_session_test.commit()

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, ForeignKey, Table
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -69,23 +69,15 @@ class Sponsor(Base):
     )
 
 
-Sponsorship = Table(
-    "sponsorships",
-    Base.metadata,
-    Column(
-        "event_id",
-        ForeignKey("events.id"),
-        primary_key=True,
-    ),
-    Column(
-        "sponsor_id",
-        ForeignKey("sponsors.id"),
-        primary_key=True,
-    ),
-    Column(
-        "amount",
-        Float,
-        nullable=False,
-        default=10,
-    ),
-)
+class Sponsorship(Base):
+    __tablename__ = "sponsorships"
+
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("events.id"), primary_key=True
+    )
+    sponsor_id: Mapped[int] = mapped_column(
+        ForeignKey("sponsors.id"), primary_key=True
+    )
+    amount: Mapped[float] = mapped_column(
+        nullable=False, default=10
+    )
