@@ -1,31 +1,9 @@
 from sqlalchemy import Column, Float, ForeignKey, Table
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    create_async_engine,
-)
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
     mapped_column,
     relationship,
-    sessionmaker,
-)
-
-SQLALCHEMY_DATABASE_URL = (
-    "sqlite+aiosqlite:///.database.db"
-)
-
-
-engine = create_async_engine(
-    SQLALCHEMY_DATABASE_URL, echo=True
-)
-
-# sessionmaker for async sessions
-AsyncSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-    class_=AsyncSession,
 )
 
 

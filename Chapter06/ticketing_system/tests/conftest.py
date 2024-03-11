@@ -20,7 +20,7 @@ from app.main import app, get_db_session
 @pytest.fixture
 def db_engine_test():
     engine = create_async_engine(
-        "sqlite+aiosqlite:///.test_database.db"
+        "sqlite+aiosqlite:///:memory:"
     )
     return engine
 
@@ -52,6 +52,7 @@ async def second_session_test(
     async with TestingAsynSessionLocal() as session:
         yield session
 
+
 @pytest.fixture
 async def fill_database_with_tickets(db_session_test):
     tickets = [
@@ -74,6 +75,7 @@ async def add_special_ticket(db_session_test):
         db_session_test.add(ticket)
         await db_session_test.commit()
 
+
 @pytest.fixture
 async def add_special_sold_ticket(db_session_test):
     ticket = Ticket(
@@ -81,12 +83,11 @@ async def add_special_sold_ticket(db_session_test):
         show="Special Show",
         details=TicketDetails(),
         sold=True,
-        user="John Doe"
+        user="John Doe",
     )
     async with db_session_test.begin():
         db_session_test.add(ticket)
         await db_session_test.commit()
-
 
 
 @pytest.fixture

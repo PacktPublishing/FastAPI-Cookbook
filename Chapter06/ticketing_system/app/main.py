@@ -4,7 +4,11 @@ from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import AsyncSessionLocal, Base, engine
+from app.database import Base
+from app.db_connection import (
+    AsyncSessionLocal,
+    get_engine,
+)
 from app.operations import (
     add_sponsor_to_event,
     create_event,
@@ -14,12 +18,13 @@ from app.operations import (
     get_all_tickets_for_show,
     get_ticket,
     update_ticket,
+    update_ticket_price,
 )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
+    async with get_engine().begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         yield
 
@@ -87,6 +92,22 @@ async def update_ticket_route(
 
     updated = await update_ticket(
         db_session, ticket_id, update_dict_args
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=404, detail="Ticket not found"
+        )
+    return {"detail": "Price updated"}
+
+
+@app.put("/ticket/{ticket_id}/price/{new_price}")
+async def update_ticket_price_route(
+    ticket_id: int,
+    new_price: float,
+    db_session: AsyncSession = Depends(get_db_session),
+):
+    updated = await update_ticket_price(
+        db_session, ticket_id, new_price
     )
     if not updated:
         raise HTTPException(

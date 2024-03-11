@@ -15,6 +15,7 @@ from app.operations import (
     get_ticket,
     sell_ticket_to_user,
     update_ticket,
+    update_ticket_price,
 )
 
 
@@ -81,10 +82,10 @@ async def test_delete_ticket(
 async def test_update_ticket_price(
     add_special_ticket, db_session_test
 ):
-    await update_ticket(
+    await update_ticket_price(
         db_session_test,
         ticket_id=1234,
-        update_ticket_dict={"price": 100},
+        new_price=100,
     )
     ticket = await get_ticket(db_session_test, 1234)
     assert ticket.price == 100

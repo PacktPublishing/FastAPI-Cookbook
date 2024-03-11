@@ -1,8 +1,3 @@
-from sqlalchemy import select
-
-from app.database import Ticket
-
-
 def test_client_does_not_found_specific_ticket(
     test_client,
 ):
@@ -29,6 +24,16 @@ def test_client_create_ticket(
 
 
 def test_client_update_ticket_price(
+    test_client, add_special_ticket
+):
+    request = test_client.put(
+        "/ticket/1234/price/250.0"
+    )
+    assert request.status_code == 200
+    assert request.json() == {"detail": "Price updated"}
+
+
+def test_client_update_ticket(
     test_client, add_special_ticket
 ):
     request = test_client.put(
