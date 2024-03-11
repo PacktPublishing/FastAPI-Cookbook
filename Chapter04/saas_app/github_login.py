@@ -1,7 +1,9 @@
+import httpx
 from fastapi import APIRouter, HTTPException, status
 
 from security import Token
 from third_party_login import (
+    GITHUB_AUTHORIZATION_URL,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
     GITHUB_REDIRECT_URI,
@@ -13,13 +15,13 @@ router = APIRouter()
 @router.get("/auth/url")
 def github_login():
     return {
-        "auth_url": "https://github.com/login/oauth/authorize"
-        f"?client_id={GITHUB_CLIENT_ID}"
+        "auth_url": GITHUB_AUTHORIZATION_URL
+        + f"?client_id={GITHUB_CLIENT_ID}"
     }
 
 
 @router.get(
-    "/auth/token",
+    "/github/auth/token",
     response_model=Token,
     responses={
         status.HTTP_401_UNAUTHORIZED: {
