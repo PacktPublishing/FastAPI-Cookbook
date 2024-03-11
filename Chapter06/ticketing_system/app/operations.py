@@ -191,9 +191,10 @@ async def add_sponsor_to_event(
     amount: float,
 ) -> bool:
     query = text(
-        "INSERT OR REPLACE INTO "
-        "sponsorships (event_id, sponsor_id, amount) "
-        "VALUES (:event_id, :sponsor_id, :amount)"
+        "INSERT INTO sponsorships (event_id, sponsor_id, amount) "
+        "VALUES (:event_id, :sponsor_id, :amount) "
+        "ON CONFLICT (event_id, sponsor_id) "
+        "DO UPDATE SET amount = sponsorships.amount + EXCLUDED.amount"
     )
     params = {
         "event_id": event_id,

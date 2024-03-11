@@ -213,7 +213,7 @@ async def test_update_sponsorship_amount(
 
         sponsorship = result.scalars().first()
 
-    assert sponsorship.amount == 200
+    assert sponsorship.amount == 210
 
 
 async def test_get_event_with_sponsors(
