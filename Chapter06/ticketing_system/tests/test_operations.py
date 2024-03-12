@@ -261,4 +261,8 @@ async def test_get_event_sponsorships_with_amount(
         db_session=db_session_test, event_id=1
     )
     print(result)
-    assert False
+    assert result == [
+        ("Spotify", 50.0),
+        ("Ticketmaster", 30.0),
+        ("Live Nation", 10.0),
+    ]
