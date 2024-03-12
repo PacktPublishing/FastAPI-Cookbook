@@ -1,3 +1,4 @@
+from click import echo
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import (
@@ -20,7 +21,8 @@ from app.main import app, get_db_session
 @pytest.fixture
 def db_engine_test():
     engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:"
+        # "sqlite+aiosqlite:///:memory:"
+        "sqlite+aiosqlite:///test.db", echo=True
     )
     return engine
 

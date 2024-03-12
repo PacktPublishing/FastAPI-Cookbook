@@ -1,11 +1,16 @@
-from sqlalchemy import and_, delete, text, update
+from sqlalchemy import (
+    and_,
+    delete,
+    select,
+    text,
+    update,
+)
 from sqlalchemy.exc import (
     IntegrityError,
     OperationalError,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload
 
 from app.database import (
     Event,
@@ -217,13 +222,28 @@ async def get_event(
     query = (
         select(Event)
         .where(Event.id == event_id)
-        .options(selectinload(Event.sponsors))
+        .options(
+            joinedload(Event.sponsors)
+        )  # check to remove select in load
     )
     async with db_session as session:
         result = await session.execute(query)
         event = result.scalars().first()
 
     return event
+
+
+async def get_events_with_sponsors(
+    db_session: AsyncSession,
+) -> list[Event]:
+    query = select(Event).options(
+        joinedload(Event.sponsors)
+    )
+    async with db_session as session:
+        result = await session.execute(query)
+        events = result.scalars().all()
+
+    return events
 
 
 async def sell_ticket_to_user(
@@ -270,3 +290,26 @@ async def get_event_sponsorships_with_amount(
         result = await session.execute(query)
         sponsor_contributions = result.fetchall()
     return sponsor_contributions
+
+
+### non efficient way
+"""
+SELECT sponsors.name, sponsorships.amount
+FROM sponsors, sponsorships
+WHERE sponsorships.sponsor_id = sponsors.id 
+    AND sponsorships.event_id = 1 
+ORDER BY sponsorships.amount DESC
+
+    select(Sponsor.name, Sponsorship.amount)
+    .join(Sponsorship, Sponsorship.sponsor_id == Sponsor.id)
+    .where(Sponsorship.event_id == 1)
+    .order_by(Sponsorship.amount.desc())
+
+    
+#TODO list:
+- get event only, get events with sponsorship to show joinload/selectinload difference
+- example with loadonly also
+- get a list of sponsorships with the amount for the event and show efficient use of join
+
+    
+    """
