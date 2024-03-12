@@ -228,8 +228,6 @@ async def test_get_event_with_sponsors(
     assert event.sponsors[0].name == "Live Nation"
 
 
-
-
 async def test_get_event_sponsorships_with_amount(
     add_sponsors_for_event, db_session_test
 ):
@@ -261,31 +259,44 @@ async def test_event_ticket_with_only_user_and_price(
             ticket.event_id
 
 
-
 async def test_concurrent_ticket_sales(
     add_special_ticket,
     db_session_test,
     second_session_test,
+    third_session_test,
+    fourth_session_test,
 ):
+    users = [
+        "Jake Fake",
+        "John Doe",
+        "Fake Dake",
+        "Will Bill",
+    ]
+
     result = await asyncio.gather(
         sell_ticket_to_user(
-            db_session_test, 1234, "Jake Fake"
+            db_session_test, 1234, users[0]
         ),
         sell_ticket_to_user(
-            second_session_test, 1234, "John Doe"
+            second_session_test, 1234, users[1]
+        ),
+        sell_ticket_to_user(
+            third_session_test, 1234, users[2]
+        ),
+        sell_ticket_to_user(
+            fourth_session_test, 1234, users[3]
         ),
     )
 
-    assert result in (
-        [True, False],
-        [False, True],
-    )  # only one of the sales should be successful
+    # only one of the sales should be successful
+    assert sum(result) == 1
+
+    # get the position of the successful sale
+    result = [i for i, x in enumerate(result) if x]
 
     ticket = await get_ticket(db_session_test, 1234)
 
     # assert that the user who bought the ticket
     # correspond to the successful sale
-    if result[0]:
-        assert ticket.user == "Jake Fake"
-    else:
-        assert ticket.user == "John Doe"
+    assert ticket.user == users[result[0]]
+    assert ticket.sold is True

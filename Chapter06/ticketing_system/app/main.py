@@ -24,9 +24,11 @@ from app.operations import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with get_engine().begin() as conn:
+    engine = get_engine()
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         yield
+    await engine.dispose()
 
 
 app = FastAPI(lifespan=lifespan)

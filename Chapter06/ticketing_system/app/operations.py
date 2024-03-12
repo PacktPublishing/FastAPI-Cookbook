@@ -246,7 +246,6 @@ async def get_events_with_sponsors(
     return events
 
 
-
 async def get_event_sponsorships_with_amount(
     db_session: AsyncSession, event_id: int
 ):
@@ -297,13 +296,9 @@ async def sell_ticket_to_user(
         .values(user=user, sold=True)
     )
 
-    try:
-        result = await db_session.execute(ticket_query)
-        await db_session.commit()
+    async with db_session as session:
+        result = await session.execute(ticket_query)
+        await session.commit()
         if result.rowcount == 0:
             return False
-    except OperationalError:
-        await db_session.rollback()
-        return False
     return True
-

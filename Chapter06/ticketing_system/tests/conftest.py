@@ -20,7 +20,8 @@ from app.main import app, get_db_session
 @pytest.fixture
 def db_engine_test():
     engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:"
+        # "sqlite+aiosqlite:///:memory:"
+        "sqlite+aiosqlite:///test.db"
     )
     return engine
 
@@ -40,10 +41,33 @@ async def db_session_test(
             yield session
 
         await conn.run_sync(Base.metadata.drop_all)
+    await db_engine_test.dispose()
 
 
 @pytest.fixture
 async def second_session_test(
+    db_engine_test,
+):
+    TestingAsynSessionLocal = sessionmaker(
+        bind=db_engine_test, class_=AsyncSession
+    )
+    async with TestingAsynSessionLocal() as session:
+        yield session
+
+
+@pytest.fixture
+async def third_session_test(
+    db_engine_test,
+):
+    TestingAsynSessionLocal = sessionmaker(
+        bind=db_engine_test, class_=AsyncSession
+    )
+    async with TestingAsynSessionLocal() as session:
+        yield session
+
+
+@pytest.fixture
+async def fourth_session_test(
     db_engine_test,
 ):
     TestingAsynSessionLocal = sessionmaker(
