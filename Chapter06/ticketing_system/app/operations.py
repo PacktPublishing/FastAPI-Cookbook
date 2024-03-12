@@ -10,6 +10,7 @@ from sqlalchemy.orm import joinedload, selectinload
 from app.database import (
     Event,
     Sponsor,
+    Sponsorship,
     Ticket,
     TicketDetails,
 )
@@ -248,3 +249,24 @@ async def sell_ticket_to_user(
         await db_session.rollback()
         return False
     return True
+
+
+async def get_event_sponsorships_with_amount(
+    db_session: AsyncSession, event_id: int
+):
+    query = (
+        select(
+            Sponsor.name.label("sponsor"),
+            Sponsorship.amount,
+        )
+        .join(
+            Sponsorship,
+            Sponsorship.sponsor_id == Sponsor.id,
+        )
+        .where(Sponsorship.event_id == event_id)
+        .order_by(Sponsorship.amount.desc())
+    )
+    async with db_session as session:
+        result = await session.execute(query)
+        sponsor_contributions = result.fetchall()
+    return sponsor_contributions

@@ -12,6 +12,7 @@ from app.operations import (
     delete_ticket,
     get_all_tickets_for_show,
     get_event,
+    get_event_sponsorships_with_amount,
     get_ticket,
     sell_ticket_to_user,
     update_ticket,
@@ -251,3 +252,13 @@ async def test_concurrent_ticket_sales(
         assert ticket.user == "Jake Fake"
     else:
         assert ticket.user == "John Doe"
+
+
+async def test_get_event_sponsorships_with_amount(
+    add_sponsors_for_event, db_session_test
+):
+    result = await get_event_sponsorships_with_amount(
+        db_session=db_session_test, event_id=1
+    )
+    print(result)
+    assert False

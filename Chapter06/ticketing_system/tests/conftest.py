@@ -119,3 +119,30 @@ async def add_event_and_sponsor_and_sponsorship(
     async with db_session_test.begin():
         db_session_test.add(sponsorship)
         await db_session_test.commit()
+
+
+@pytest.fixture
+async def add_sponsors_for_event(
+    db_session_test,
+):
+    event = Event(name="The Rolling Stones Concert")
+    sponsors = [
+        Sponsor(name="Live Nation"),
+        Sponsor(name="Ticketmaster"),
+        Sponsor(name="Spotify"),
+    ]
+
+    async with db_session_test.begin():
+        db_session_test.add(event)
+        db_session_test.add_all(sponsors)
+        await db_session_test.flush()
+        for k, sponsor in enumerate(sponsors):
+            db_session_test.add(
+                Sponsorship(
+                    event_id=event.id,
+                    sponsor_id=sponsor.id,
+                    amount=10 + k * 20,
+                )
+            )
+
+        await db_session_test.commit()
