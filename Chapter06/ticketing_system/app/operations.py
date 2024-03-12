@@ -246,30 +246,6 @@ async def get_events_with_sponsors(
     return events
 
 
-async def sell_ticket_to_user(
-    db_session: AsyncSession, ticket_id: int, user: str
-) -> bool:
-    ticket_query = (
-        update(Ticket)
-        .where(
-            and_(
-                Ticket.id == ticket_id,
-                Ticket.sold == False,
-            )
-        )
-        .values(user=user, sold=True)
-    )
-
-    try:
-        result = await db_session.execute(ticket_query)
-        await db_session.commit()
-        if result.rowcount == 0:
-            return False
-    except OperationalError:
-        await db_session.rollback()
-        return False
-    return True
-
 
 async def get_event_sponsorships_with_amount(
     db_session: AsyncSession, event_id: int
@@ -305,3 +281,29 @@ async def get_events_tickets_with_user_price(
         result = await session.execute(query)
         tickets = result.scalars().all()
     return tickets
+
+
+async def sell_ticket_to_user(
+    db_session: AsyncSession, ticket_id: int, user: str
+) -> bool:
+    ticket_query = (
+        update(Ticket)
+        .where(
+            and_(
+                Ticket.id == ticket_id,
+                Ticket.sold == False,
+            )
+        )
+        .values(user=user, sold=True)
+    )
+
+    try:
+        result = await db_session.execute(ticket_query)
+        await db_session.commit()
+        if result.rowcount == 0:
+            return False
+    except OperationalError:
+        await db_session.rollback()
+        return False
+    return True
+
