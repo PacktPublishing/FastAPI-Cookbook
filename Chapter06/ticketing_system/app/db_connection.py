@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import sessionmaker
 
 SQLALCHEMY_DATABASE_URL = (
-    "sqlite+aiosqlite:///.database.db"
+"sqlite+aiosqlite:///.database.db"
+#    "sqlite+aiosqlite:///.database.db"
 )
 
 

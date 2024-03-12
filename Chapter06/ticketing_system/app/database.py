@@ -69,6 +69,8 @@ class Sponsor(Base):
     )
 
 
+
+
 class Sponsorship(Base):
     __tablename__ = "sponsorships"
 
@@ -81,3 +83,13 @@ class Sponsorship(Base):
     amount: Mapped[float] = mapped_column(
         nullable=False, default=10
     )
+
+
+class CreditCard(Base):
+    __tablename__ = "credit_cards"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[str]
+    expiration_date: Mapped[str]
+    cvv: Mapped[str]
+    card_holder_name: Mapped[str]
