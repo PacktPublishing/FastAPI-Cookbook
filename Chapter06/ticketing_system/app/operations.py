@@ -10,7 +10,7 @@ from sqlalchemy.exc import (
     OperationalError,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, load_only
 
 from app.database import (
     Event,
@@ -275,10 +275,7 @@ async def get_event_sponsorships_with_amount(
     db_session: AsyncSession, event_id: int
 ):
     query = (
-        select(
-            Sponsor.name.label("sponsor"),
-            Sponsorship.amount,
-        )
+        select(Sponsor.name, Sponsorship.amount)
         .join(
             Sponsorship,
             Sponsorship.sponsor_id == Sponsor.id,
@@ -292,24 +289,19 @@ async def get_event_sponsorships_with_amount(
     return sponsor_contributions
 
 
-### non efficient way
-"""
-SELECT sponsors.name, sponsorships.amount
-FROM sponsors, sponsorships
-WHERE sponsorships.sponsor_id = sponsors.id 
-    AND sponsorships.event_id = 1 
-ORDER BY sponsorships.amount DESC
-
-    select(Sponsor.name, Sponsorship.amount)
-    .join(Sponsorship, Sponsorship.sponsor_id == Sponsor.id)
-    .where(Sponsorship.event_id == 1)
-    .order_by(Sponsorship.amount.desc())
-
-    
-#TODO list:
-- get event only, get events with sponsorship to show joinload/selectinload difference
-- example with loadonly also
-- get a list of sponsorships with the amount for the event and show efficient use of join
-
-    
-    """
+async def get_events_tickets_with_user_price(
+    db_session: AsyncSession, event_id: int
+) -> list[Ticket]:
+    query = (
+        select(Ticket)
+        .where(Ticket.event_id == event_id)
+        .options(
+            load_only(
+                Ticket.id, Ticket.user, Ticket.price
+            )
+        )
+    )
+    async with db_session as session:
+        result = await session.execute(query)
+        tickets = result.scalars().all()
+    return tickets

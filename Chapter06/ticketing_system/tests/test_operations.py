@@ -1,8 +1,10 @@
 import asyncio
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from app.database import Event, Sponsorship, Ticket
 from app.operations import (
@@ -13,6 +15,7 @@ from app.operations import (
     get_all_tickets_for_show,
     get_event,
     get_event_sponsorships_with_amount,
+    get_events_tickets_with_user_price,
     get_ticket,
     sell_ticket_to_user,
     update_ticket,
@@ -266,3 +269,20 @@ async def test_get_event_sponsorships_with_amount(
         ("Ticketmaster", 30.0),
         ("Live Nation", 10.0),
     ]
+
+
+async def test_event_ticket_with_only_user_and_price(
+    add_event_with_tickets, db_session_test
+):
+    tickets = await get_events_tickets_with_user_price(
+        db_session_test, 1
+    )
+
+    assert tickets != []
+
+    for ticket in tickets:
+        with pytest.raises(DetachedInstanceError):
+            ticket.show
+
+        with pytest.raises(DetachedInstanceError):
+            ticket.event_id

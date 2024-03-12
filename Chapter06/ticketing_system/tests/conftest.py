@@ -1,4 +1,3 @@
-from click import echo
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import (
@@ -21,8 +20,7 @@ from app.main import app, get_db_session
 @pytest.fixture
 def db_engine_test():
     engine = create_async_engine(
-        # "sqlite+aiosqlite:///:memory:"
-        "sqlite+aiosqlite:///test.db", echo=True
+        "sqlite+aiosqlite:///:memory:"
     )
     return engine
 
@@ -108,6 +106,32 @@ async def add_event_and_sponsor(db_session_test):
     async with db_session_test.begin():
         db_session_test.add(event)
         db_session_test.add(sponsor)
+        await db_session_test.commit()
+
+
+@pytest.fixture
+async def add_event_with_tickets(db_session_test):
+    event = Event(name="The Rolling Stones Concert")
+    users = [
+        "John Doe",
+        "Jane Doe",
+        "Foo Bar",
+        "Bar Foo",
+    ]
+    tickets = [
+        Ticket(
+            show="The Rolling Stones Concert",
+            event_id=1,
+            price=100,
+            user=users[j] if j < 3 else None,
+            sold=True if j < 3 else False,
+        )
+        for j in range(10)
+    ]
+    async with db_session_test.begin():
+        db_session_test.add(event)
+        await db_session_test.flush()
+        db_session_test.add_all(tickets)
         await db_session_test.commit()
 
 
