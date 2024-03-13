@@ -69,8 +69,6 @@ class Sponsor(Base):
     )
 
 
-
-
 class Sponsorship(Base):
     __tablename__ = "sponsorships"
 
