@@ -9,7 +9,7 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
-from .models import Book
+from models import Book
 
 app = FastAPI()
 
@@ -76,9 +76,5 @@ async def raise_excpetion():
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
-):
-    return PlainTextResponse(
-        str(exc), status_code=status.HTTP_400_BAD_REQUEST
-    )
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return PlainTextResponse(str(exc), status_code=status.HTTP_400_BAD_REQUEST)
