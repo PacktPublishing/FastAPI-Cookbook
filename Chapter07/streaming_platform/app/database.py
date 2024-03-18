@@ -1,5 +1,5 @@
-from app.db_connection import client
+from app.db_connection import mongo_client
 
-database = client.beat_streaming
+database = mongo_client.beat_streaming
 
 songs = database.songs

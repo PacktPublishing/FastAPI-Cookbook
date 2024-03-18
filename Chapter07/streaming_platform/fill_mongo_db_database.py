@@ -3,7 +3,7 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app.db_connection import ping_server
+from app.db_connection import ping_mongo_db_server
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -111,5 +111,5 @@ async def insert_songs():
         # Close the MongoDB connection
 
 
-asyncio.run(ping_server())
+asyncio.run(ping_mongo_db_server())
 asyncio.run(insert_songs())

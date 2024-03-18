@@ -1,18 +1,31 @@
+from asyncio import gather
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 
+from app import main_search
 from app.database import database
-from app.db_connection import ping_server
+from app.db_connection import (
+    ping_elasticsearch_server,
+    ping_mongo_db_server,
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await ping_server()
+    await gather(
+        ping_mongo_db_server(),
+        ping_elasticsearch_server(),
+    )
     yield
 
 
 app = FastAPI(lifespan=lifespan)
+
+try:
+    app.include_router(main_search.router)
+except Exception:
+    pass
 
 
 def database_dependency():
