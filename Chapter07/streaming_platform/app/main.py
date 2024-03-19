@@ -1,7 +1,7 @@
 from asyncio import gather
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Body, Depends, FastAPI
 
 from app import main_search
 from app.database import database
@@ -28,23 +28,36 @@ except Exception:
     pass
 
 
-def database_dependency():
+def mongo_database():
     return database
 
 
 @app.post("/song")
 async def add_song(
-    song: dict,
-    db=Depends(database_dependency),
+    song: dict = Body(
+        example={
+            "title": "My Song",
+            "artist": "My Artist",
+            "genre": "My Genre",
+        },
+    ),
+    mongo_db=Depends(mongo_database),
+    es_client=Depends(
+        main_search.get_elasticsearch_client
+    ),
 ):
-    await db.songs.insert_one(song)
+    await es_client.index(
+        index="songs_index", body=song
+    )
+    await mongo_db.songs.insert_one(song)
+
     return {"message": "Song added successfully"}
 
 
 @app.get("/song/{song_id}")
 async def get_song(
     song_id: str,
-    db=Depends(database_dependency),
+    db=Depends(mongo_database),
 ):
     song = await db.songs.find_one({"_id": song_id})
     if song:
@@ -55,7 +68,7 @@ async def get_song(
 
 @app.get("/songs")
 async def get_songs(
-    db=Depends(database_dependency),
+    db=Depends(mongo_database),
 ):
     songs = []
     async for song in db.songs.find():
@@ -67,7 +80,7 @@ async def get_songs(
 async def update_song(
     song_id: str,
     updated_song: dict,
-    db=Depends(database_dependency),
+    db=Depends(mongo_database),
 ):
     result = await db.songs.update_one(
         {"_id": song_id}, {"$set": updated_song}
@@ -81,7 +94,7 @@ async def update_song(
 @app.delete("/song/{song_id}")
 async def delete_song(
     song_id: str,
-    db=Depends(database_dependency),
+    db=Depends(mongo_database),
 ):
     result = await db.songs.delete_one({"_id": song_id})
     if result.deleted_count == 1:

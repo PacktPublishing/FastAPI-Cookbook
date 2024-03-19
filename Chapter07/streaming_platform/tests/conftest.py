@@ -3,7 +3,10 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app, database_dependency
+from app.main import app, mongo_database
+from app.main_search import (
+    get_elasticsearch_client as es_client,
+)
 
 
 async def songs():
@@ -20,7 +23,7 @@ async def songs():
 
 
 @pytest.fixture
-def database_mock():
+def mongo_db_mock():
     database = MagicMock()
     database.songs.insert_one = AsyncMock()
 
@@ -54,9 +57,21 @@ def database_mock():
 
 
 @pytest.fixture
-def test_client(database_mock):
+def es_client_mock():
+    client = MagicMock()
+    client.index = AsyncMock()
+    client.search = AsyncMock()
+    return client
+
+
+@pytest.fixture
+def test_client(mongo_db_mock, es_client_mock):
     client = TestClient(app)
-    client.app.dependency_overrides[
-        database_dependency
-    ] = lambda: database_mock
+    client.app.dependency_overrides[mongo_database] = (
+        lambda: mongo_db_mock
+    )
+    client.app.dependency_overrides[es_client] = (
+        lambda: es_client_mock
+    )
+
     return client
