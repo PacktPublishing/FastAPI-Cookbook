@@ -1,6 +1,7 @@
 fastapi[all]
 motor
-elasticsearch>=7.8.0
+elasticsearch>=8,<9
 aiohttp
+
 
 pytest
