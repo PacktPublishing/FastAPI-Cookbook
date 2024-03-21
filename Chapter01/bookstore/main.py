@@ -54,8 +54,9 @@ class BookResponse(BaseModel):
 @app.get("/allbooks", response_model=list[BookResponse])
 async def read_all_books():
     return [
-        {"title": "1984", "author": "George Orwell"},
+        {"id": 1, "title": "1984", "author": "George Orwell"},
         {
+            "id": 2,
             "title": "The Great Gatsby",
             "author": "F. Scott Fitzgerald",
         },
