@@ -61,13 +61,14 @@ async def retrieve_credit_card_info(
         result = await session.execute(query)
         credit_card = result.scalars().first()
 
-    return {
-        "card_number": decrypt_credit_card_info(
+    credit_card_number = decrypt_credit_card_info(
             credit_card.number
         ),
+    cvv = decrypt_credit_card_info(credit_card.cvv)
+
+    return {
+        "card_number": credit_card_number,
         "card_holder_name": credit_card.card_holder_name,
         "expiration_date": credit_card.expiration_date,
-        "cvv": decrypt_credit_card_info(
-            credit_card.cvv
-        ),
+        "cvv": cvv
     }

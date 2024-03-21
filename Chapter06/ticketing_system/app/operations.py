@@ -7,7 +7,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import (
     IntegrityError,
-    OperationalError,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, load_only
