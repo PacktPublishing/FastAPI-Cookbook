@@ -44,7 +44,7 @@ async def create_ticket(
 
 async def get_ticket(
     db_session: AsyncSession, ticket_id: int
-) -> Ticket:
+) -> Ticket | None:
     query = (
         select(Ticket)
         .where(Ticket.id == ticket_id)
@@ -108,9 +108,6 @@ async def update_ticket(
     )
 
     updating_ticket_values = update_ticket_dict.copy()
-    updating_details_values = (
-        updating_ticket_values.pop("details", None)
-    )
 
     if updating_ticket_values != {}:
         ticket_query = ticket_query.values(
@@ -130,21 +127,33 @@ async def update_ticket(
             await db_session.rollback()
             return False
 
-    if updating_details_values is not None:
-        details_query = (
-            update(TicketDetails)
-            .where(TicketDetails.ticket_id == ticket_id)
-            .values(**updating_details_values)
+    return True
+
+
+async def update_ticket_details(
+    db_session: AsyncSession,
+    ticket_id: int,
+    updating_ticket_details: dict,
+) -> bool:
+    ticket_query = update(TicketDetails).where(
+        TicketDetails.ticket_id == ticket_id
+    )
+
+    if updating_ticket_details != {}:
+        ticket_query = ticket_query.values(
+            **updating_ticket_details
         )
 
         try:
             result = await db_session.execute(
-                details_query
+                ticket_query
             )
             await db_session.commit()
             if result.rowcount == 0:
                 return False
-        except OperationalError as e:
+        except (
+            OperationalError
+        ):  # avoid transaction conflicts
             await db_session.rollback()
             return False
 

@@ -19,6 +19,7 @@ from app.operations import (
     get_ticket,
     sell_ticket_to_user,
     update_ticket,
+    update_ticket_details,
     update_ticket_price,
 )
 
@@ -107,18 +108,18 @@ async def test_update_ticket_price(
 async def test_update_ticket_details(
     add_special_ticket, db_session_test
 ):
-    await update_ticket(
+    await update_ticket_details(
         db_session_test,
         ticket_id=1234,
-        update_ticket_dict={"details": {"seat": "A1"}},
+        updating_ticket_details={"seat": "A1"},
     )
     ticket = await get_ticket(db_session_test, 1234)
     assert ticket.details.seat == "A1"
 
-    await update_ticket(
+    await update_ticket_details(
         db_session_test,
         ticket_id=1234,
-        update_ticket_dict={"details": {"seat": None}},
+        updating_ticket_details={"seat": None},
     )
 
     ticket = await get_ticket(db_session_test, 1234)

@@ -14,7 +14,8 @@ from app.database import (
     Ticket,
     TicketDetails,
 )
-from app.main import app, get_db_session
+from app.db_connection import get_db_session
+from app.main import app
 
 
 @pytest.fixture
