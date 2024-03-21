@@ -109,22 +109,17 @@ async def update_ticket(
 
     updating_ticket_values = update_ticket_dict.copy()
 
-    if updating_ticket_values != {}:
-        ticket_query = ticket_query.values(
-            **updating_ticket_values
-        )
+    if updating_ticket_values == {}:
+        return False
 
-        try:
-            result = await db_session.execute(
-                ticket_query
-            )
-            await db_session.commit()
-            if result.rowcount == 0:
-                return False
-        except (
-            OperationalError
-        ):  # avoid transaction conflicts
-            await db_session.rollback()
+    ticket_query = ticket_query.values(
+        **updating_ticket_values
+    )
+
+    async with db_session as session:
+        result = await session.execute(ticket_query)
+        await session.commit()
+        if result.rowcount == 0:
             return False
 
     return True
@@ -139,22 +134,17 @@ async def update_ticket_details(
         TicketDetails.ticket_id == ticket_id
     )
 
-    if updating_ticket_details != {}:
-        ticket_query = ticket_query.values(
-            **updating_ticket_details
-        )
+    if updating_ticket_details == {}:
+        return False
 
-        try:
-            result = await db_session.execute(
-                ticket_query
-            )
-            await db_session.commit()
-            if result.rowcount == 0:
-                return False
-        except (
-            OperationalError
-        ):  # avoid transaction conflicts
-            await db_session.rollback()
+    ticket_query = ticket_query.values(
+        **updating_ticket_details
+    )
+
+    async with db_session as session:
+        result = await session.execute(ticket_query)
+        await session.commit()
+        if result.rowcount == 0:
             return False
 
     return True
