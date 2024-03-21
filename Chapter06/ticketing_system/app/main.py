@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import Base
 from app.db_connection import (
-    AsyncSessionLocal,
+    get_db_session,
     get_engine,
 )
 from app.operations import (
@@ -32,11 +32,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
-
-async def get_db_session():
-    async with AsyncSessionLocal() as session:
-        yield session
 
 
 @app.get("/ticket/{ticket_id}")
@@ -79,7 +74,6 @@ class TicketDetailsUpateRequest(BaseModel):
 
 class TicketUpdateRequest(BaseModel):
     price: float | None = Field(None, ge=0)
-    details: TicketDetailsUpateRequest | None = None
 
 
 @app.put("/ticket/{ticket_id}")
