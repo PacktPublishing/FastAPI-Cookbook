@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app, mongo_database
+from app.database import mongo_database
+from app.main import app
 from app.main_search import (
     get_elasticsearch_client as es_client,
 )

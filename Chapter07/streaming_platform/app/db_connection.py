@@ -6,7 +6,7 @@ from elasticsearch import (
 )
 from motor.motor_asyncio import AsyncIOMotorClient
 
-logger = logger = logging.getLogger("uvicorn.error")
+logger = logging.getLogger("uvicorn.error")
 
 
 mongo_client = AsyncIOMotorClient(

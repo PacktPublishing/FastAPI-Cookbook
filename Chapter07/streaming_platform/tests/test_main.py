@@ -71,7 +71,7 @@ def test_update_song(test_client, mongo_db_mock):
 
 
 def test_delete_song(test_client, mongo_db_mock):
-    response = test_client.delete(f"/song/123")
+    response = test_client.delete("/song/123")
 
     assert response.status_code == 200
     assert response.json() == {

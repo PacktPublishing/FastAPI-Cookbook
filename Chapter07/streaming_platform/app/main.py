@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import Body, Depends, FastAPI
 
 from app import main_search
-from app.database import database
+from app.database import mongo_database
 from app.db_connection import (
     ping_elasticsearch_server,
     ping_mongo_db_server,
@@ -28,10 +28,6 @@ except Exception:
     pass
 
 
-def mongo_database():
-    return database
-
-
 @app.post("/song")
 async def add_song(
     song: dict = Body(
@@ -51,7 +47,10 @@ async def add_song(
     )
     await mongo_db.songs.insert_one(song)
 
-    return {"message": "Song added successfully"}
+    return {
+        "message": "Song added successfully",
+        "id": str(song["_id"]),
+    }
 
 
 @app.get("/song/{song_id}")
