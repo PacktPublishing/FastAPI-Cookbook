@@ -20,7 +20,7 @@ GET songs_index/_search?pretty=true
     "title",
     "views_per_country.Italy",
     "album.title",
-    "artist",
+    "artist"
   ],
   "sort": {
     "views_per_country.Italy": {

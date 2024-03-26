@@ -1,6 +1,11 @@
-from fastapi import APIRouter, Depends
+import logging
+
+from elasticsearch import BadRequestError
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.db_connection import es_client
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(
     prefix="/search",
@@ -33,13 +38,20 @@ async def get_top_ten_by_country(
         "album.title",
         "artist",
     ]
-    response = await es_client.search(
-        index="songs_index",
-        query=query,
-        size=10,
-        sort=sort,
-        source=source,
-    )
+    try:
+        response = await es_client.search(
+            index="songs_index",
+            query=query,
+            size=10,
+            sort=sort,
+            source=source,
+        )
+    except BadRequestError as e:
+        logger.error(e)
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid country",
+        )
 
     songs = []
     for record in response["hits"]["hits"]:
