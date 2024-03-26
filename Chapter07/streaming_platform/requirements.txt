@@ -1,6 +1,7 @@
 fastapi[all]
 motor
 elasticsearch>=8,<9
+
 aiohttp
 
 
