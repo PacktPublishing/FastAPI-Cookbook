@@ -10,6 +10,8 @@ from fastapi import (
     HTTPException,
 )
 from fastapi.encoders import ENCODERS_BY_TYPE
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 from pydantic import BaseModel
 
 from app import main_search
@@ -17,6 +19,8 @@ from app.database import create_es_index, mongo_database
 from app.db_connection import (
     ping_elasticsearch_server,
     ping_mongo_db_server,
+    ping_redis_server,
+    redis_client,
 )
 
 logger = logging.getLogger("uvicorn.error")
@@ -28,7 +32,8 @@ ENCODERS_BY_TYPE[ObjectId] = str
 async def lifespan(app: FastAPI):
     await gather(
         ping_mongo_db_server(),
-        ping_elasticsearch_server()
+        ping_elasticsearch_server(),
+        ping_redis_server(),
     )
 
     db = mongo_database()
@@ -37,6 +42,12 @@ async def lifespan(app: FastAPI):
     await db.songs.create_index({"artist": "text"})
 
     await create_es_index()
+
+    FastAPICache.init(
+        RedisBackend(redis_client),
+        prefix="fastapi-cache",
+    )
+
     yield
 
 
@@ -198,7 +209,9 @@ async def get_songs_by_released_year(
 @app.get("/songs_by_artist")
 async def get_songs_by_artist(
     artist: str,
-    db=Depends(mongo_database), #TODO use Annotated instead of =Depends
+    db=Depends(
+        mongo_database
+    ),  # TODO use Annotated instead of =Depends
 ):
     query = db.songs.find(
         {"$text": {"$search": artist}}

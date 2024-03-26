@@ -1,4 +1,5 @@
 import logging
+from redis import asyncio as aioredis
 
 from elasticsearch import (
     AsyncElasticsearch,
@@ -15,6 +16,7 @@ mongo_client = AsyncIOMotorClient(
 
 es_client = AsyncElasticsearch("http://localhost:9200")
 
+redis_client = aioredis.from_url("redis://localhost")
 
 async def ping_mongo_db_server():
     try:
@@ -36,5 +38,16 @@ async def ping_elasticsearch_server():
     except TransportError as e:
         logger.error(
             f"Elasticsearch connection failed: {e}"
+        )
+        raise e
+
+
+async def ping_redis_server():
+    try:
+        await redis_client.ping()
+        logger.info("Connected to Redis")
+    except Exception as e:
+        logger.error(
+            f"Error connecting to Redis: {e}"
         )
         raise e

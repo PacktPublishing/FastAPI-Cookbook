@@ -36,6 +36,17 @@ GET songs_index/_search?pretty=true
 GET songs_index/_search?pretty=true
 ```json
 {
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "exists": {
+            "field": "views_per_country.Italy"
+          }
+        }
+      ]
+    }
+  },
   "size": 0,
   "aggs": {
     "top_artists": {
