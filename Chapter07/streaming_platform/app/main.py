@@ -1,3 +1,4 @@
+import logging
 from asyncio import gather
 from contextlib import asynccontextmanager
 
@@ -9,13 +10,16 @@ from fastapi import (
     HTTPException,
 )
 from fastapi.encoders import ENCODERS_BY_TYPE
+from pydantic import BaseModel
 
 from app import main_search
-from app.database import mongo_database
+from app.database import create_es_index, mongo_database
 from app.db_connection import (
     ping_elasticsearch_server,
     ping_mongo_db_server,
 )
+
+logger = logging.getLogger("uvicorn.error")
 
 ENCODERS_BY_TYPE[ObjectId] = str
 
@@ -24,8 +28,15 @@ ENCODERS_BY_TYPE[ObjectId] = str
 async def lifespan(app: FastAPI):
     await gather(
         ping_mongo_db_server(),
-        ping_elasticsearch_server(),
+        ping_elasticsearch_server()
     )
+
+    db = mongo_database()
+    await db.songs.drop_indexes()
+    await db.songs.create_index({"release_year": -1})
+    await db.songs.create_index({"artist": "text"})
+
+    await create_es_index()
     yield
 
 
@@ -47,18 +58,12 @@ async def add_song(
         },
     ),
     mongo_db=Depends(mongo_database),
-    es_client=Depends(
-        main_search.get_elasticsearch_client
-    ),
 ):
-    await es_client.index(
-        index="songs_index", body=song
-    )
     await mongo_db.songs.insert_one(song)
 
     return {
         "message": "Song added successfully",
-        "id": str(song["_id"]),
+        "id": song.get("_id"),
     }
 
 
@@ -74,6 +79,7 @@ async def get_song(
         raise HTTPException(
             status_code=404, detail="Song not found"
         )
+    song.pop("album", None)
     return song
 
 
@@ -117,3 +123,94 @@ async def delete_song(
     raise HTTPException(
         status_code=404, detail="Song not found"
     )
+
+
+class Playlist(BaseModel):
+    name: str
+    songs: list[str] = []
+
+
+@app.post("/playlist")
+async def create_playlist(
+    playlist: Playlist = Body(
+        example={
+            "name": "My Playlist",
+            "songs": ["song_id"],
+        }
+    ),
+    db=Depends(mongo_database),
+):
+    result = await db.playlists.insert_one(
+        playlist.model_dump()
+    )
+    return {
+        "message": "Playlist created successfully",
+        "id": str(result.inserted_id),
+    }
+
+
+@app.get("/playlist/{playlist_id}")
+async def get_playlist(
+    playlist_id: str,
+    db=Depends(mongo_database),
+):
+    playlist = await db.playlists.find_one(
+        {"_id": ObjectId(playlist_id)}
+    )
+    if not playlist:
+        raise HTTPException(
+            status_code=404, detail="Playlist not found"
+        )
+
+    songs = await db.songs.find(
+        {
+            "_id": {
+                "$in": [
+                    ObjectId(song_id)
+                    for song_id in playlist["songs"]
+                ]
+            }
+        }
+    ).to_list(None)
+
+    return {"name": playlist["name"], "songs": songs}
+
+
+@app.get("/songs/year")
+async def get_songs_by_released_year(
+    year: int,
+    db=Depends(mongo_database),
+):
+    query = db.songs.find({"release_year": year})
+    explained_query = await query.explain()
+    logger.info(
+        "Index used: %s",
+        explained_query.get("queryPlanner", {})
+        .get("winningPlan", {})
+        .get("inputStage", {})
+        .get("indexName", "No index used"),
+    )
+
+    songs = await query.to_list(None)
+    return songs
+
+
+@app.get("/songs_by_artist")
+async def get_songs_by_artist(
+    artist: str,
+    db=Depends(mongo_database), #TODO use Annotated instead of =Depends
+):
+    query = db.songs.find(
+        {"$text": {"$search": artist}}
+    )
+    explained_query = await query.explain()
+    logger.info(
+        "Index used: %s",
+        explained_query.get("queryPlanner", {})
+        .get("winningPlan", {})
+        .get("inputStage", {})
+        .get("indexName", "No index used"),
+    )
+
+    songs = await query.to_list(None)
+    return songs

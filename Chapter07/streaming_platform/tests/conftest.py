@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from bson import ObjectId
 from fastapi.testclient import TestClient
 
 from app.database import mongo_database
@@ -10,17 +11,25 @@ from app.main_search import (
 )
 
 
-async def songs():
-    yield {
-        "_id": "1",
-        "title": "Song 1",
-        "artist": "Artist 1",
-    }
-    yield {
-        "_id": "2",
-        "title": "Song 2",
-        "artist": "Artist 2",
-    }
+def mock_find_songs_list():
+    to_return = [
+        {
+            "_id": ObjectId("89abcdef0123456789abcdef"),
+            "title": "Song 1",
+            "artist": "Artist 1",
+        },
+        {
+            "_id": ObjectId("23456789abcdef0123456789"),
+            "title": "Song 2",
+            "artist": "Artist 2",
+        },
+    ]
+    song_list = MagicMock()
+    print(song_list.id)
+    song_list.to_list = AsyncMock(
+        return_value=to_return
+    )
+    return song_list
 
 
 @pytest.fixture
@@ -28,9 +37,8 @@ def mongo_db_mock():
     database = MagicMock()
     database.songs.insert_one = AsyncMock()
 
-    song_id = "123"
     song = {
-        "_id": song_id,
+        "_id": ObjectId("0123456789abcdef01234567"),
         "title": "Test Song",
         "artist": "Test Artist",
     }
@@ -39,8 +47,7 @@ def mongo_db_mock():
     )
 
     database.songs.find = MagicMock(
-        # return_value=songs()
-        return_value=songs()
+        return_value=mock_find_songs_list()
     )
 
     result_mock = MagicMock()
