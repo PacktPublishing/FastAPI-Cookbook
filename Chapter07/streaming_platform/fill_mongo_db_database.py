@@ -1,18 +1,14 @@
 import asyncio
 import logging
 
-from motor.motor_asyncio import AsyncIOMotorClient
-
-from app.db_connection import ping_mongo_db_server
+from app.db_connection import (
+    mongo_client,
+    ping_mongo_db_server,
+)
 from songs_info import songs_info
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(levelname)s:%(message)s",
-)
 
-client = AsyncIOMotorClient("mongodb://localhost:27017")
-db = client.beat_streaming
+db = mongo_client.beat_streaming
 collection = db["songs"]
 
 
