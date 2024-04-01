@@ -7,7 +7,6 @@ from app.db_connection import (
 )
 from songs_info import songs_info
 
-
 db = mongo_client.beat_streaming
 collection = db["songs"]
 
@@ -24,6 +23,10 @@ async def insert_songs():
         # Close the MongoDB connection
 
 
+async def main():
+    await ping_mongo_db_server()
+    await insert_songs()
+
+
 if __name__ == "__main__":
-    asyncio.run(ping_mongo_db_server())
-    asyncio.run(insert_songs())
+    asyncio.run(main())
