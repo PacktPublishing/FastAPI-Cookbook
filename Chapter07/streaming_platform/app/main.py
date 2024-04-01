@@ -15,7 +15,7 @@ from fastapi_cache.backends.redis import RedisBackend
 from pydantic import BaseModel
 
 from app import main_search, third_party_endpoint
-from app.database import create_es_index, mongo_database
+from app.database import mongo_database
 from app.db_connection import (
     ping_elasticsearch_server,
     ping_mongo_db_server,
@@ -32,16 +32,14 @@ ENCODERS_BY_TYPE[ObjectId] = str
 async def lifespan(app: FastAPI):
     await gather(
         ping_mongo_db_server(),
-        # ping_elasticsearch_server(),
-        # ping_redis_server(),
+        ping_elasticsearch_server(),
+        ping_redis_server(),
     )
 
     db = mongo_database()
     await db.songs.drop_indexes()
     await db.songs.create_index({"release_year": -1})
     await db.songs.create_index({"artist": "text"})
-
-    # await create_es_index()
 
     FastAPICache.init(
         RedisBackend(redis_client),

@@ -6,6 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi_cache.decorator import cache
 
 from app.db_connection import es_client, redis_client
+from app.es_queries import (
+    top_ten_artists_query,
+    top_ten_songs_query,
+)
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -38,29 +42,9 @@ async def get_top_ten_by_country(
         )
         return json.loads(cached_data)
 
-    views_field = f"views_per_country.{country}"
-    query = {
-        "bool": {
-            "must": {"match_all": {}},
-            "filter": [
-                {"exists": {"field": views_field}}
-            ],
-        }
-    }
-    sort = {views_field: {"order": "desc"}}
-    source = [
-        "title",
-        views_field,
-        "album.title",
-        "artist",
-    ]
     try:
         response = await es_client.search(
-            index="songs_index",
-            query=query,
-            size=10,
-            sort=sort,
-            source=source,
+            **top_ten_songs_query(country)
         )
     except BadRequestError as e:
         logger.error(e)
@@ -100,40 +84,18 @@ async def top_ten_artist_by_country(
     logger.info(
         f"Getting top ten artists for {country}"
     )
-    views_field = f"views_per_country.{country}"
-
-    query = {
-        "bool": {
-            "filter": [
-                {"exists": {"field": views_field}}
-            ],
-        }
-    }
-
-    aggs = {
-        "top_ten_artists": {
-            "terms": {
-                "field": "artist",
-                "size": 10,
-                "order": {"views": "desc"},
-            },
-            "aggs": {
-                "views": {
-                    "sum": {
-                        "field": views_field,
-                        "missing": 0,
-                    }
-                }
-            },
-        }
-    }
-
-    response = await es_client.search(
-        index="songs_index",
-        size=0,
-        query=query,
-        aggs=aggs,
+    try:
+        response = await es_client.search(
+        **top_ten_artists_query(country)
     )
+    except BadRequestError as e:
+        logger.error(e)
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid country",
+        )
+
     return [
         {
             "artist": record.get("key"),
