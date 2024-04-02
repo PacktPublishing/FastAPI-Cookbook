@@ -54,7 +54,11 @@ class BookResponse(BaseModel):
 @app.get("/allbooks", response_model=list[BookResponse])
 async def read_all_books():
     return [
-        {"id": 1, "title": "1984", "author": "George Orwell"},
+        {
+            "id": 1,
+            "title": "1984",
+            "author": "George Orwell",
+        },
         {
             "id": 2,
             "title": "The Great Gatsby",
@@ -67,7 +71,9 @@ async def read_all_books():
 async def http_exception_handler(request, exc):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"message": "Oops! Something went wrong"},
+        content={
+            "message": "Oops! Something went wrong"
+        },
     )
 
 
@@ -77,5 +83,10 @@ async def raise_excpetion():
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return PlainTextResponse(str(exc), status_code=status.HTTP_400_BAD_REQUEST)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
+    return PlainTextResponse(
+        str(exc),
+        status_code=status.HTTP_400_BAD_REQUEST,
+    )
