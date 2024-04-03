@@ -1,14 +1,13 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from app.database import Base
-from app.db_connection import (
-    get_db_session,
-    get_engine,
-)
+from app.db_connection import get_db_session, get_engine
 from app.operations import (
     add_sponsor_to_event,
     create_event,
@@ -36,8 +35,10 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/ticket/{ticket_id}")
 async def read_ticket(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     ticket_id: int,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     ticket = await get_ticket(db_session, ticket_id)
     if ticket is None:
@@ -55,8 +56,10 @@ class TicketRequest(BaseModel):
 
 @app.post("/ticket", response_model=dict[str, int])
 async def create_ticket_route(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     ticket: TicketRequest,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     ticket_id = await create_ticket(
         db_session,
@@ -80,7 +83,9 @@ class TicketUpdateRequest(BaseModel):
 async def update_ticket_route(
     ticket_id: int,
     ticket_update: TicketUpdateRequest,
-    db_session: AsyncSession = Depends(get_db_session),
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
 ):
     update_dict_args = ticket_update.model_dump(
         exclude_unset=True
@@ -98,9 +103,11 @@ async def update_ticket_route(
 
 @app.put("/ticket/{ticket_id}/price/{new_price}")
 async def update_ticket_price_route(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     ticket_id: int,
     new_price: float,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     updated = await update_ticket_price(
         db_session, ticket_id, new_price
@@ -114,8 +121,10 @@ async def update_ticket_price_route(
 
 @app.delete("/ticket/{ticket_id}")
 async def delete_ticket_route(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     ticket_id: int,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     ticket = await delete_ticket(db_session, ticket_id)
     if not ticket:
@@ -134,8 +143,10 @@ class TicketResponse(TicketRequest):
     response_model=list[TicketResponse],
 )
 async def get_tickets_for_show(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     show: str,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     tickets = await get_all_tickets_for_show(
         db_session, show
@@ -145,9 +156,11 @@ async def get_tickets_for_show(
 
 @app.post("/event", response_model=dict[str, int])
 async def create_event_route(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     event_name: str,
     nb_tickets: int | None = 0,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     event_id = await create_event(
         db_session, event_name, nb_tickets
@@ -170,8 +183,10 @@ async def create_event_route(
     },
 )
 async def register_sponsor(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     sponsor_name: str,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     sponsor_id = await create_sponsor(
         db_session, sponsor_name
@@ -187,10 +202,12 @@ async def register_sponsor(
 
 @app.post("/event/{event_id}/sponsor/{sponsor_id}")
 async def register_sponsor_amount_contribution(
+    db_session: Annotated[
+        AsyncSession, Depends(get_db_session)
+    ],
     sponsor_id: int,
     event_id: int,
     amount: float | None = 0,
-    db_session: AsyncSession = Depends(get_db_session),
 ):
     registered = await add_sponsor_to_event(
         db_session, event_id, sponsor_id, amount
