@@ -13,6 +13,7 @@ from app.es_queries import (
 
 logger = logging.getLogger("uvicorn.error")
 
+
 router = APIRouter(
     prefix="/search",
     tags=["search"],
@@ -27,13 +28,13 @@ def get_redis_client():
     return redis_client
 
 
-@router.get("/top/ten/songs/{country}")
-async def get_top_ten_by_country(
+@router.get("/top/ten/artists/{country}")
+async def top_ten_artist_by_country(
     country: str,
     es_client=Depends(get_elasticsearch_client),
     redis_client=Depends(get_redis_client),
 ):
-    cache_key = f"top_ten_songs_{country}"
+    cache_key = f"top_ten_artists_{country}"
 
     cached_data = await redis_client.get(cache_key)
     if cached_data:
@@ -42,6 +43,46 @@ async def get_top_ten_by_country(
         )
         return json.loads(cached_data)
 
+    logger.info(
+        f"Getting top ten artists for {country}"
+    )
+    try:
+        response = await es_client.search(
+            **top_ten_artists_query(country)
+        )
+    except BadRequestError as e:
+        logger.error(e)
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid country",
+        )
+
+    artists = [
+        {
+            "artist": record.get("key"),
+            "views": record.get("views", {}).get(
+                "value"
+            ),
+        }
+        for record in response["aggregations"][
+            "top_ten_artists"
+        ]["buckets"]
+    ]
+
+    await redis_client.set(
+        cache_key, json.dumps(artists), ex=3600
+    )
+
+    return artists
+
+
+@router.get("/top/ten/songs/{country}")
+@cache(expire=60)
+async def get_top_ten_by_country(
+    country: str,
+    es_client=Depends(get_elasticsearch_client),
+):
     try:
         response = await es_client.search(
             **top_ten_songs_query(country)
@@ -68,42 +109,4 @@ async def get_top_ten_by_country(
         }
         songs.append(song)
 
-    await redis_client.set(
-        cache_key, json.dumps(songs), ex=60
-    )
-
     return songs
-
-
-@router.get("/top/ten/artists/{country}")
-@cache(expire=60)
-async def top_ten_artist_by_country(
-    country: str,
-    es_client=Depends(get_elasticsearch_client),
-):
-    logger.info(
-        f"Getting top ten artists for {country}"
-    )
-    try:
-        response = await es_client.search(
-        **top_ten_artists_query(country)
-    )
-    except BadRequestError as e:
-        logger.error(e)
-
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid country",
-        )
-
-    return [
-        {
-            "artist": record.get("key"),
-            "views": record.get("views", {}).get(
-                "value"
-            ),
-        }
-        for record in response["aggregations"][
-            "top_ten_artists"
-        ]["buckets"]
-    ]
