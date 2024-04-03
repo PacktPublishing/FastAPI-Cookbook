@@ -1,3 +1,5 @@
+import json
+
 from fastapi import (
     FastAPI,
     HTTPException,
@@ -79,7 +81,7 @@ async def http_exception_handler(request, exc):
 
 @app.get("/error_endpoint")
 async def raise_excpetion():
-    raise HTTPException(status_code=500)
+    raise HTTPException(status_code=400)
 
 
 @app.exception_handler(RequestValidationError)
@@ -87,6 +89,7 @@ async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ):
     return PlainTextResponse(
-        str(exc),
+        "This is a plain text response:"
+        f" \n{json.dumps(exc.errors(), indent=2)}",
         status_code=status.HTTP_400_BAD_REQUEST,
     )
