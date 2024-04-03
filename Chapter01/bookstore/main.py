@@ -53,8 +53,8 @@ class BookResponse(BaseModel):
     author: str
 
 
-@app.get("/allbooks", response_model=list[BookResponse])
-async def read_all_books():
+@app.get("/allbooks")
+async def read_all_books() -> list[BookResponse]:
     return [
         {
             "id": 1,
