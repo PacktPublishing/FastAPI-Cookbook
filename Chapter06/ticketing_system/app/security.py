@@ -62,13 +62,13 @@ async def retrieve_credit_card_info(
         credit_card = result.scalars().first()
 
     credit_card_number = decrypt_credit_card_info(
-            credit_card.number
-        ),
+        credit_card.number
+    )
     cvv = decrypt_credit_card_info(credit_card.cvv)
 
     return {
         "card_number": credit_card_number,
         "card_holder_name": credit_card.card_holder_name,
         "expiration_date": credit_card.expiration_date,
-        "cvv": cvv
+        "cvv": cvv,
     }
