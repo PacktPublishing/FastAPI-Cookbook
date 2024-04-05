@@ -8,8 +8,12 @@ from app.dependencies import (
     select_category,
     time_range,
 )
+from app.middleware import MyMiddleware
 
 app = FastAPI()
+
+
+app.add_middleware(MyMiddleware)
 
 
 @app.get("/v1/trips")
@@ -65,4 +69,5 @@ def get_trips_by_category_v3(
             "\n. The coupon code is valid! "
             "You will get a discount!"
         )
+
     return message
