@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI
 
+from app import localization
 from app.dependencies import (
     CommonQueryParams,
     check_coupon_validity,
@@ -14,6 +15,9 @@ app = FastAPI()
 
 
 app.add_middleware(MyMiddleware)
+
+
+app.include_router(localization.router)
 
 
 @app.get("/v1/trips")
