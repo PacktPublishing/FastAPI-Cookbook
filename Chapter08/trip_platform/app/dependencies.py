@@ -21,11 +21,11 @@ def time_range(
         description=(
             "If not provided the current date is used"
         ),
-        example=date.today().isoformat(),
+        examples=[date.today().isoformat()],
     ),
     end: date | None = Query(
         None,
-        example=date.today() + timedelta(days=7),
+        examples=[date.today() + timedelta(days=7)],
     ),
 ) -> Tuple[date, date | None]:
     check_start_end_condition(start, end)
@@ -91,14 +91,14 @@ class CommonQueryParams:
             date | None,
             Query(
                 description="required if end date is not provided",
-                example="2023-01-01",
+                examples=["2023-01-01"],
             ),
         ] = None,
         end: Annotated[
             date | None,
             Query(
                 description="required if start date is not provided",
-                example="2023-01-01",
+                examples=["2023-01-01"],
             ),
         ] = None,
         code: str | None = Query(
