@@ -15,15 +15,20 @@ from app.dependencies import (
     select_category,
     time_range,
 )
-from app.middleware import MyMiddleware
-from app.rate_limiter import limiter
+from app.middleware import ClientInfoMiddleware
+
+# from app.rate_limiter import limiter
 
 app = FastAPI()
-app.state.limiter = limiter
-app.add_exception_handler(
-    RateLimitExceeded, _rate_limit_exceeded_handler
-)
-app.add_middleware(SlowAPIMiddleware)
+
+
+app.add_middleware(ClientInfoMiddleware)
+
+# app.state.limiter = limiter
+# app.add_exception_handler(
+#    RateLimitExceeded, _rate_limit_exceeded_handler
+# )
+# app.add_middleware(SlowAPIMiddleware)
 
 # profiler = Profiler(
 #    interval=0.001, async_mode="enabled"
@@ -44,9 +49,6 @@ app.add_middleware(SlowAPIMiddleware)
 #    await call_next(request)
 #    profiler.stop()
 #    return HTMLResponse(profiler.output_html())
-
-
-app.add_middleware(MyMiddleware)
 
 
 app.include_router(localization.router)

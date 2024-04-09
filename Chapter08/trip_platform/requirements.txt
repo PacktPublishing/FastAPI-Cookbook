@@ -1,5 +1,9 @@
 fastapi
 uvicorn
-babel
 
+pytest
+httpx
+
+babel
 pyinstrument
+slowapi
