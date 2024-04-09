@@ -8,7 +8,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app import localization
+from app import internationalization
 from app.dependencies import (
     CommonQueryParams,
     check_coupon_validity,
@@ -51,7 +51,7 @@ app.add_middleware(ClientInfoMiddleware)
 #    return HTMLResponse(profiler.output_html())
 
 
-app.include_router(localization.router)
+app.include_router(internationalization.router)
 
 
 @app.get("/v1/trips")
