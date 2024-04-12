@@ -2,12 +2,6 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI
 
-# from fastapi.responses import HTMLResponse
-# from pyinstrument import Profiler
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.middleware import SlowAPIMiddleware
-
 from app import internationalization
 from app.dependencies import (
     CommonQueryParams,
@@ -17,41 +11,25 @@ from app.dependencies import (
 )
 from app.middleware import ClientInfoMiddleware
 
+# from slowapi import _rate_limit_exceeded_handler
+from app.profiler import router as profiler_router
+
 # from app.rate_limiter import limiter
+
 
 app = FastAPI()
 
 
 app.add_middleware(ClientInfoMiddleware)
 
+app.include_router(internationalization.router)
+app.include_router(profiler_router)
+
 # app.state.limiter = limiter
 # app.add_exception_handler(
 #    RateLimitExceeded, _rate_limit_exceeded_handler
 # )
 # app.add_middleware(SlowAPIMiddleware)
-
-# profiler = Profiler(
-#    interval=0.001, async_mode="enabled"
-# )
-
-# TODO check how to cumulate the stats and setup the specific endpoint
-# build two endpoints with some sleeping time in it
-# write a test that calls both endpoints, then check the stats
-# make a first improuvement by adding a worker, then another
-# by using asynchrounous calls in between
-# you can also profile the tests directly to show the difference
-# this will probably be with timeit (to check)
-# @app.middleware("http")
-# async def profile_request(request: Request, call_next):
-#    if request.url.path in ["/docs", "/openapi.json"]:
-#        return await call_next(request)
-#    profiler.start()
-#    await call_next(request)
-#    profiler.stop()
-#    return HTMLResponse(profiler.output_html())
-
-
-app.include_router(internationalization.router)
 
 
 @app.get("/v1/trips")
