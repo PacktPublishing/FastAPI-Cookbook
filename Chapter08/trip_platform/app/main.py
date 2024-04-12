@@ -1,6 +1,9 @@
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app import internationalization
 from app.dependencies import (
@@ -10,12 +13,8 @@ from app.dependencies import (
     time_range,
 )
 from app.middleware import ClientInfoMiddleware
-
-# from slowapi import _rate_limit_exceeded_handler
 from app.profiler import router as profiler_router
-
-# from app.rate_limiter import limiter
-
+from app.rate_limiter import limiter
 
 app = FastAPI()
 
@@ -25,11 +24,11 @@ app.add_middleware(ClientInfoMiddleware)
 app.include_router(internationalization.router)
 app.include_router(profiler_router)
 
-# app.state.limiter = limiter
-# app.add_exception_handler(
-#    RateLimitExceeded, _rate_limit_exceeded_handler
-# )
-# app.add_middleware(SlowAPIMiddleware)
+app.state.limiter = limiter
+app.add_exception_handler(
+    RateLimitExceeded, _rate_limit_exceeded_handler
+)
+app.add_middleware(SlowAPIMiddleware)
 
 
 @app.get("/v1/trips")

@@ -4,6 +4,8 @@ from babel import Locale, negotiate_locale
 from babel.numbers import get_currency_name
 from fastapi import APIRouter, Depends, Header, Request
 
+from app.rate_limiter import limiter
+
 router = APIRouter(tags=["Localizad Content Endpoints"])
 
 SUPPORTED_LOCALES = [
@@ -50,6 +52,7 @@ home_page_content = {
 
 
 @router.get("/homepage")
+@limiter.limit("2/minute")
 async def home(
     request: Request,
     language: Annotated[
@@ -73,9 +76,7 @@ async def get_currency(
 
 
 @router.get("/show/currency")
-# @limiter.limit("5/minute")
 async def show_currency(
-    #    request: Request,
     currency: Annotated[get_currency, Depends()],
     language: Annotated[
         resolve_accept_language, Depends(use_cache=True)
