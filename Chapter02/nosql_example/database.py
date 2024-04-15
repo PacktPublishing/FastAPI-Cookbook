@@ -1,6 +1,10 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 
-client = AsyncIOMotorClient("mongodb://localhost:27017")
+client = MongoClient()
+# equivalent to
+# client = MongoClient("mongodb://localhost:27017")
+
+
 database = client.mydatabase
 
 user_collection = database["users"]
