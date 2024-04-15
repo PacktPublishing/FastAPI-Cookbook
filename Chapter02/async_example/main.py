@@ -6,11 +6,6 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-@app.get("/")
-async def read_root():
-    return {"message": "Root Route"}
-
-
 @app.get("/sync")
 def read_sync():
     time.sleep(2)
