@@ -1,14 +1,8 @@
-from fastapi import (
-    Depends,
-    FastAPI,
-    HTTPException,
-)
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, User
-
-app = FastAPI()
 
 
 def get_db():
@@ -17,6 +11,9 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+app = FastAPI()
 
 
 class UserBody(BaseModel):
@@ -96,4 +93,3 @@ def delete_user(
     db.delete(db_user)
     db.commit()
     return {"detail": "User deleted"}
-
