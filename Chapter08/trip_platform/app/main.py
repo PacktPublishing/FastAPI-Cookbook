@@ -8,7 +8,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app import internationalization
 from app.background_task import (
-    store_query_to_external_source,
+    store_query_to_external_db,
 )
 from app.dependencies import (
     CommonQueryParams,
@@ -66,7 +66,7 @@ def get_trips_by_category(
         )
 
     background_tasks.add_task(
-        store_query_to_external_source, message
+        store_query_to_external_db, message
     )
     logger.info(
         "Query sent to background task, end of request."
