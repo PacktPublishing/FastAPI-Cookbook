@@ -1,2 +1,3 @@
-fastapi[app]
+fastapi[all]
 motor
+pydantic[email]
