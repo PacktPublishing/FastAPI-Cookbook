@@ -1,54 +1,29 @@
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
     create_engine,
-    ForeignKey,
-)
-from sqlalchemy.ext.declarative import (
-    declarative_base,
 )
 from sqlalchemy.orm import (
-    sessionmaker,
-    relationship,
+    DeclarativeBase,
+    Mapped,
     mapped_column,
+    sessionmaker,
 )
 
 DATABASE_URL = "sqlite:///./test.db"
 
 engine = create_engine(DATABASE_URL)
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class User(Base):
-    __tablename__ = "users"
-    id = Column(
-        Integer,
+    __tablename__ = "user"
+    id: Mapped[int] = mapped_column(
         primary_key=True,
     )
-    name = Column(String)
-    email = Column(String)
-
-    tweets = relationship(
-        "Tweet",
-        back_populates="user",
-    )
-
-
-class Tweet(Base):
-    __tablename__ = "tweets"
-    id = Column(
-        Integer,
-        primary_key=True,
-    )
-    content = Column(String)
-    user_id = mapped_column(ForeignKey("users.id"))
-
-    user = relationship(
-        "User",
-        back_populates="tweets",
-    )
+    name: Mapped[str]
+    email: Mapped[str]
 
 
 Base.metadata.create_all(bind=engine)
