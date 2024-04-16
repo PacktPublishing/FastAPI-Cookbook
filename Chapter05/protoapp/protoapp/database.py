@@ -1,16 +1,19 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    create_engine,
-)
-from sqlalchemy.orm import declarative_base, sessionmaker
 import logging
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    sessionmaker,
+)
 
 logger = logging.getLogger(__name__)
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
+
 
 DATABASE_URL = "sqlite:///./production.db"
 
@@ -23,9 +26,11 @@ SessionLocal = sessionmaker(
 
 class Item(Base):
     __tablename__ = "items"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    color = Column(String)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, index=True
+    )
+    name: Mapped[str] = mapped_column(index=True)
+    color: Mapped[str]
 
 
 logger.debug("Binding the engine to the database")
