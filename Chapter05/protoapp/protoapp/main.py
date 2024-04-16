@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import (
     Depends,
     FastAPI,
@@ -11,8 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from protoapp.database import Item, SessionLocal
-
-logger = logging.getLogger("uvicorn.error")
+from protoapp.logging import client_info_logger
 
 app = FastAPI()
 
@@ -71,9 +68,10 @@ def get_item(
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    logger.info(
-        f"Request: {request.method} {request.url}"
+    client_info_logger.info(
+        f"method: {request.method}, "
+        f"call: {request.url.path}, "
+        f"ip: {request.client.host}"
     )
     response = await call_next(request)
-    logger.info(f"Response: {response.status_code}")
     return response
