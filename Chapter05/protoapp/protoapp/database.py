@@ -15,15 +15,6 @@ class Base(DeclarativeBase):
     pass
 
 
-DATABASE_URL = "sqlite:///./production.db"
-
-
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine
-)
-
-
 class Item(Base):
     __tablename__ = "items"
     id: Mapped[int] = mapped_column(
@@ -33,5 +24,18 @@ class Item(Base):
     color: Mapped[str]
 
 
+# DATABASE_URL = "sqlite:///./production.db"
+DATABASE_URL = "sqlite:///:memory:"
+
+
+engine = create_engine(DATABASE_URL)
+
+
 logger.debug("Binding the engine to the database")
+
+
 Base.metadata.create_all(bind=engine)
+
+SessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)

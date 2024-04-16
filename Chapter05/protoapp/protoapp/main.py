@@ -18,7 +18,7 @@ app = FastAPI()
 
 
 @app.get("/home")
-async def read_main():
+def read_main():
     return {"message": "Hello World"}
 
 
@@ -40,7 +40,7 @@ def get_db_session():
     response_model=int,
     status_code=status.HTTP_201_CREATED,
 )
-async def add_item(
+def add_item(
     item: ItemSchema,
     db_session: Session = Depends(get_db_session),
 ):
@@ -52,7 +52,7 @@ async def add_item(
 
 
 @app.get("/item/{item_id}", response_model=ItemSchema)
-async def get_item(
+def get_item(
     item_id: int,
     db_session: Session = Depends(get_db_session),
 ):

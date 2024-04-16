@@ -1,5 +1,5 @@
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from protoapp.database import Item
 from protoapp.main import app
@@ -7,10 +7,11 @@ from protoapp.main import app
 
 @pytest.mark.asyncio
 async def test_read_main():
-    async with AsyncClient(
-        app=app, base_url="http://test"
-    ) as ac:
-        response = await ac.get("/home")
+    client = AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    )
+    response = await client.get("/home")
     assert response.status_code == 200
     assert response.json() == {"message": "Hello World"}
 
@@ -24,7 +25,7 @@ def test_read_main_client(test_client):
 
 @pytest.mark.integration
 def test_client_can_add_read_the_item_from_database(
-    test_client, db_session_test
+    test_client, test_db_session
 ):
     response = test_client.get("/item/1")
     assert response.status_code == 404
@@ -36,7 +37,7 @@ def test_client_can_add_read_the_item_from_database(
     # Verify the user was added to the database
     item_id = response.json()
     item = (
-        db_session_test.query(Item)
+        test_db_session.query(Item)
         .filter(Item.id == item_id)
         .first()
     )
