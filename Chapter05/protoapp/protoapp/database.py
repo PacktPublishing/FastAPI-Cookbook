@@ -24,8 +24,7 @@ class Item(Base):
     color: Mapped[str]
 
 
-# DATABASE_URL = "sqlite:///./production.db"
-DATABASE_URL = "sqlite:///:memory:"
+DATABASE_URL = "sqlite:///./production.db"
 
 
 engine = create_engine(DATABASE_URL)
