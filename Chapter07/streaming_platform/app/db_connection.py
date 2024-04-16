@@ -7,7 +7,7 @@ from elasticsearch import (
 from motor.motor_asyncio import AsyncIOMotorClient
 from redis import asyncio as aioredis
 
-logger = logging.getLogger("uvicorn.error")
+logger = logging.getLogger("uvicorn")
 
 
 mongo_client = AsyncIOMotorClient(

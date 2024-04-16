@@ -3,13 +3,11 @@ import logging
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-logger = logging.getLogger("uvicorn.error")
+logger = logging.getLogger("uvicorn")
 
 
 class ClientInfoMiddleware(BaseHTTPMiddleware):
-    async def dispatch(
-        self, request: Request, call_next
-    ):
+    async def dispatch(self, request: Request, call_next):
         host_client = request.client.host
         requested_path = request.url.path
         method = request.method

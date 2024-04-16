@@ -11,7 +11,7 @@ from app.es_queries import (
     top_ten_songs_query,
 )
 
-logger = logging.getLogger("uvicorn.error")
+logger = logging.getLogger("uvicorn")
 
 
 router = APIRouter(
@@ -38,18 +38,12 @@ async def top_ten_artist_by_country(
 
     cached_data = await redis_client.get(cache_key)
     if cached_data:
-        logger.info(
-            f"Returning cached data for {country}"
-        )
+        logger.info(f"Returning cached data for {country}")
         return json.loads(cached_data)
 
-    logger.info(
-        f"Getting top ten artists for {country}"
-    )
+    logger.info(f"Getting top ten artists for {country}")
     try:
-        response = await es_client.search(
-            **top_ten_artists_query(country)
-        )
+        response = await es_client.search(**top_ten_artists_query(country))
     except BadRequestError as e:
         logger.error(e)
 
@@ -61,18 +55,12 @@ async def top_ten_artist_by_country(
     artists = [
         {
             "artist": record.get("key"),
-            "views": record.get("views", {}).get(
-                "value"
-            ),
+            "views": record.get("views", {}).get("value"),
         }
-        for record in response["aggregations"][
-            "top_ten_artists"
-        ]["buckets"]
+        for record in response["aggregations"]["top_ten_artists"]["buckets"]
     ]
 
-    await redis_client.set(
-        cache_key, json.dumps(artists), ex=3600
-    )
+    await redis_client.set(cache_key, json.dumps(artists), ex=3600)
 
     return artists
 
@@ -84,9 +72,7 @@ async def get_top_ten_by_country(
     es_client=Depends(get_elasticsearch_client),
 ):
     try:
-        response = await es_client.search(
-            **top_ten_songs_query(country)
-        )
+        response = await es_client.search(**top_ten_songs_query(country))
     except BadRequestError as e:
         logger.error(e)
 
@@ -100,12 +86,8 @@ async def get_top_ten_by_country(
         song = {
             "title": record["_source"]["title"],
             "artist": record["_source"]["artist"],
-            "album": record["_source"]["album"][
-                "title"
-            ],
-            "views": record["_source"]
-            .get("views_per_country", {})
-            .get(country),
+            "album": record["_source"]["album"]["title"],
+            "views": record["_source"].get("views_per_country", {}).get(country),
         }
         songs.append(song)
 
