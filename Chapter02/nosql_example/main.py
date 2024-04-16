@@ -54,13 +54,15 @@ def create_user(user: User) -> UserResponse:
 @app.get("/user")
 def get_user(user_id: str) -> UserResponse:
     db_user = user_collection.find_one(
-        {"_id": ObjectId(user_id)}
+        {
+            "_id": ObjectId(user_id)
+            if ObjectId.is_valid(user_id)
+            else None
+        }
     )
     if db_user is None:
         raise HTTPException(
             status_code=404, detail="User not found"
         )
-    user_response = UserResponse(
-        id=str(db_user["_id"]), **db_user
-    )
-    return user_response
+    db_user["id"] = str(db_user["_id"])
+    return db_user
