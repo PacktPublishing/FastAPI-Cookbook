@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from protoapp.database import Item, SessionLocal
-from protoapp.logging import client_info_logger
+from protoapp.logging import client_logger
 
 app = FastAPI()
 
@@ -68,7 +68,7 @@ def get_item(
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    client_info_logger.info(
+    client_logger.info(
         f"method: {request.method}, "
         f"call: {request.url.path}, "
         f"ip: {request.client.host}"
