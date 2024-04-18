@@ -21,8 +21,7 @@ from app.main import app
 @pytest.fixture
 def db_engine_test():
     engine = create_async_engine(
-        # "sqlite+aiosqlite:///:memory:"
-        "sqlite+aiosqlite:///test.db"
+        "sqlite+aiosqlite:///:memory:"
     )
     return engine
 
