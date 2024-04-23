@@ -12,7 +12,7 @@
         <input type="text" id="messageText" autocomplete="off" />
         <button>Send</button>
     </form>
-    <ul id='messages'>
+    <ul id='messages'></ul>
     </ul>
     <script>
         var client_id = "{{ username }}"
@@ -24,6 +24,8 @@
             var content = document.createTextNode(event.data)
             if (event.data.startsWith("You wrote")) {
                 message.style.textAlign = "right";
+                message.style.color = "blue";
+                message.style.listStyle = "none";
             }
             message.appendChild(content)
             messages.appendChild(message)
