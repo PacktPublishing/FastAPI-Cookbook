@@ -2,10 +2,13 @@ import logging
 
 from fastapi import (
     FastAPI,
+    Request,
     WebSocket,
     WebSocketException,
     status,
 )
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi.websockets import WebSocketDisconnect
 
 app = FastAPI()
@@ -13,7 +16,9 @@ app = FastAPI()
 logger = logging.getLogger("uvicorn")
 
 
-@app.websocket("/chatroom")
+@app.websocket(
+    "/chatroom"
+)  # TODO change name of the function and endpoint
 async def chatroom(websocket: WebSocket):
     if not websocket.headers.get("authorization"):
         return await websocket.close()
@@ -35,10 +40,21 @@ async def chatroom(websocket: WebSocket):
             if "bad message" in data:
                 raise WebSocketException(
                     code=status.WS_1008_POLICY_VIOLATION,
-                    reason=(
-                        "You are not allowed "
-                        "to send this message"
-                    ),
+                    reason="Inappropriate message",
                 )
     except WebSocketDisconnect:
         logger.warn("Connection closed by the client")
+
+
+templates = Jinja2Templates(directory="templates")
+
+
+@app.get("/room/{username}")
+async def chatroom_endpoint(
+    request: Request, username: str
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="chatroom.html",
+        context={"username": username},
+    )
