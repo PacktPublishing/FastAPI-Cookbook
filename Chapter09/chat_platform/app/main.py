@@ -11,6 +11,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.websockets import WebSocketDisconnect
 
+from app.websocket import ConnectionManager
+
 app = FastAPI()
 
 logger = logging.getLogger("uvicorn")
@@ -58,3 +60,30 @@ async def chatroom_endpoint(
         name="chatroom.html",
         context={"username": username},
     )
+
+
+connection_manager = ConnectionManager()
+
+
+@app.websocket("/ws/{username}")
+async def websocket_chatroom(
+    websocket: WebSocket, username: str
+):
+    await connection_manager.connect(websocket)
+    await connection_manager.broadcast(
+        f"Client #{username} joined the chat", exclude=websocket
+    )
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await connection_manager.send_personal_message(
+                f"You wrote: {data}", websocket
+            )
+            await connection_manager.broadcast(
+                f"Client #{username} says: {data}", exclude=websocket
+            )
+    except WebSocketDisconnect:
+        connection_manager.disconnect(websocket)
+        await connection_manager.broadcast(
+            f"Client #{username} left the chat"
+        )

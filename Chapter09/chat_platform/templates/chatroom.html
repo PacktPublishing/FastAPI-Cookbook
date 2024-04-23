@@ -2,11 +2,12 @@
 <html>
 
 <head>
-    <title>Chat Application</title>
+    <title>Chat</title>
 </head>
 
 <body>
-    <h1>WebSocket Chat page for {{ username }}</h1>
+    <h1>WebSocket Chat</h1>
+    <h2>Your ID: <span id="ws-id"></span></h2>
     <form action="" onsubmit="sendMessage(event)">
         <input type="text" id="messageText" autocomplete="off" />
         <button>Send</button>
@@ -14,7 +15,9 @@
     <ul id='messages'>
     </ul>
     <script>
-        var ws = new WebSocket("ws://localhost:8000/ws");
+        var client_id = "{{ username }}"
+        document.querySelector("#ws-id").textContent = client_id;
+        var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
         ws.onmessage = function (event) {
             var messages = document.getElementById('messages')
             var message = document.createElement('li')
