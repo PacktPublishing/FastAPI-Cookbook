@@ -3,6 +3,7 @@ import logging
 from fastapi import (
     FastAPI,
     WebSocket,
+    WebSocketException,
 )
 from fastapi.websockets import WebSocketDisconnect
 
@@ -13,7 +14,7 @@ logger = logging.getLogger("uvicorn")
 
 @app.websocket("/chatroom")
 async def chatroom(websocket: WebSocket):
-    if not websocket.headers.get("Authorization"):
+    if not websocket.headers.get("authorization"):
         return
     await websocket.accept()
     await websocket.send_text(
@@ -28,5 +29,6 @@ async def chatroom(websocket: WebSocket):
                 await websocket.close()
                 break
 
-    except WebSocketDisconnect:
+    except WebSocketDisconnect as error:
         logger.warn("Connection closed")
+        raise WebSocketException("Connection closed")
