@@ -22,6 +22,9 @@
             var messages = document.getElementById('messages')
             var message = document.createElement('li')
             var content = document.createTextNode(event.data)
+            if (event.data.startsWith("You wrote")) {
+                message.style.textAlign = "right";
+            }
             message.appendChild(content)
             messages.appendChild(message)
         };
