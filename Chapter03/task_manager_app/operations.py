@@ -99,9 +99,9 @@ def remove_task(id: int) -> bool:
                 continue
             writer.writerow(task.model_dump())
     if deleted_task:
-        dict_task_wihtout_id = deleted_task.model_dump()
-        del dict_task_wihtout_id["id"]
-        return Task(**dict_task_wihtout_id)
+        dict_task_without_id = deleted_task.model_dump()
+        del dict_task_without_id["id"]
+        return Task(**dict_task_without_id)
 
 
 def read_all_tasks_v2() -> list[TaskV2WithID]:
