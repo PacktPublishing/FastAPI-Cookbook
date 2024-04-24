@@ -1,6 +1,8 @@
 import logging
+from typing import Annotated
 
 from fastapi import (
+    Depends,
     FastAPI,
     Request,
     WebSocket,
@@ -11,9 +13,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.websockets import WebSocketDisconnect
 
+from app.security import User, get_user_from_token
+from app.security import router as security_router
 from app.websocket import ConnectionManager
 
 app = FastAPI()
+app.include_router(security_router)
 
 logger = logging.getLogger("uvicorn")
 
@@ -48,6 +53,18 @@ async def chatroom(websocket: WebSocket):
         logger.warn("Connection closed by the client")
 
 
+@app.websocket("/secured-ws")
+async def secured_websocket(
+    websocket: WebSocket,
+    user: Annotated[User, Depends(get_user_from_token)],
+):
+    await websocket.accept()
+    await websocket.send_text(
+        f"Welcome {user.username} to the chat room!"
+    )
+    await websocket.close()
+
+
 templates = Jinja2Templates(directory="templates")
 
 
@@ -71,7 +88,8 @@ async def websocket_chatroom(
 ):
     await connection_manager.connect(websocket)
     await connection_manager.broadcast(
-        f"Client #{username} joined the chat", exclude=websocket
+        f"Client #{username} joined the chat",
+        exclude=websocket,
     )
     try:
         while True:
@@ -80,7 +98,8 @@ async def websocket_chatroom(
                 f"You wrote: {data}", websocket
             )
             await connection_manager.broadcast(
-                f"Client #{username} says: {data}", exclude=websocket
+                f"Client #{username} says: {data}",
+                exclude=websocket,
             )
     except WebSocketDisconnect:
         connection_manager.disconnect(websocket)
