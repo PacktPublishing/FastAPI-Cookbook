@@ -139,10 +139,12 @@ async def login_form(
     request: Request, redirecturl: Optional[str] = None
 ) -> HTMLResponse:
     templates = Jinja2Templates(directory="templates")
-    # check redirection url in headers
-    print("stop here")
+    if redirecturl:
+        context = {"redirection_url": redirecturl}
+    else:
+        context = {}
     return templates.TemplateResponse(
         request=request,
-        name="login.html",
-        context={"redirection_url": redirecturl},
+        name="login.html.jinja",
+        context=context,
     )
