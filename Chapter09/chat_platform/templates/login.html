@@ -18,6 +18,7 @@
         document.querySelector('form').addEventListener('submit', function (event) {
             event.preventDefault();
 
+            var redirection_url = "{{ redirection_url }}";
             var username = document.getElementById('username').value;
             var password = document.getElementById('password').value;
 
@@ -37,13 +38,16 @@
                     }
                 })
                 .then(data => {
-                    localStorage.setItem('token', data.access_token);
-                    document.querySelector('form').style.display = 'none';
-                    // Show a message
-                    var message = document.createElement('p');
-                    message.textContent = 'Authenticated';
-                    document.body.appendChild(message);
-
+                    document.cookie = `chatroomtoken=${data.access_token}`;
+                    if (redirection_url) {
+                        window.location.href = redirection_url;
+                    } else {
+                        document.querySelector('form').style.display = 'none';
+                        // Show a message
+                        var message = document.createElement('p');
+                        message.textContent = 'Authenticated';
+                        document.body.appendChild(message);
+                    }
                 })
                 .catch(error => {
                     alert(error.message);

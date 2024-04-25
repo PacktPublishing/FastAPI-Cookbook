@@ -15,10 +15,12 @@ from fastapi.websockets import WebSocketDisconnect
 
 from app.security import User, get_user_from_token
 from app.security import router as security_router
+from app.exclusive_chatroom import router as exclusive_chatroom_router
 from app.websocket import ConnectionManager
 
 app = FastAPI()
 app.include_router(security_router)
+app.include_router(exclusive_chatroom_router)
 
 logger = logging.getLogger("uvicorn")
 

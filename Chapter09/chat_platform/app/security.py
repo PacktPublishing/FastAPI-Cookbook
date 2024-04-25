@@ -1,8 +1,11 @@
+from typing import Optional
+
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
     Request,
+    Response,
     WebSocket,
     WebSocketException,
     status,
@@ -132,9 +135,14 @@ async def login(
 
 
 @router.get("/login")
-async def login_form(request: Request) -> HTMLResponse:
+async def login_form(
+    request: Request, redirecturl: Optional[str] = None
+) -> HTMLResponse:
     templates = Jinja2Templates(directory="templates")
+    # check redirection url in headers
+    print("stop here")
     return templates.TemplateResponse(
         request=request,
         name="login.html",
+        context={"redirection_url": redirecturl},
     )
