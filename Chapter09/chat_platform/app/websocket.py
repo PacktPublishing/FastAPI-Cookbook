@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import WebSocket
 
 
@@ -20,9 +22,9 @@ class ConnectionManager:
     async def broadcast(
         self, message: str, exclude: WebSocket = None
     ):
-        for connection in (
-            self.active_connections
-        ):  # TODO better refactor
-            if connection == exclude:
-                continue
-            await connection.send_text(message)
+        tasks = [
+            connection.send_text(message)
+            for connection in self.active_connections
+            if connection != exclude
+        ]
+        await asyncio.gather(*tasks)
