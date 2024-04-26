@@ -51,4 +51,3 @@ def get_user(
         .first()
     )
     return user
-    return user
