@@ -14,7 +14,7 @@ from app.security import (
     fake_token_resolver,
     get_user_from_token,
 )
-from app.websocket import ConnectionManager
+from app.ws_manager import ConnectionManager
 
 router = APIRouter()
 

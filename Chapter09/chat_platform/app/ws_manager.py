@@ -15,15 +15,15 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
 
     async def send_personal_message(
-        self, message: str, websocket: WebSocket
+        self, message: dict, websocket: WebSocket
     ):
-        await websocket.send_text(message)
+        await websocket.send_json(message)
 
     async def broadcast(
-        self, message: str, exclude: WebSocket = None
+        self, message: dict, exclude: WebSocket = None
     ):
         tasks = [
-            connection.send_text(message)
+            connection.send_json(message)
             for connection in self.active_connections
             if connection != exclude
         ]
