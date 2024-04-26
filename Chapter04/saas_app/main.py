@@ -12,6 +12,7 @@ import api_key
 import github_login
 import mfa
 import premium_access
+import rbac
 import security
 import user_session
 from db_connection import get_engine, get_session
@@ -37,6 +38,7 @@ app = FastAPI(
 
 app.include_router(security.router)
 app.include_router(premium_access.router)
+app.include_router(rbac.router)
 app.include_router(github_login.router)
 app.include_router(mfa.router)
 app.include_router(user_session.router)

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -12,7 +14,7 @@ from models import Role
 from security import decode_access_token, oauth2_scheme
 
 
-class UserCreateResponseWithRole(BaseModel):
+class UserCreateRequestWithRole(BaseModel):
     username: str
     email: EmailStr
     role: Role
@@ -21,7 +23,7 @@ class UserCreateResponseWithRole(BaseModel):
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: Session = Depends(get_session),
-) -> UserCreateResponseWithRole:
+) -> UserCreateRequestWithRole:
     user = decode_access_token(token, session)
     if not user:
         raise HTTPException(
@@ -29,7 +31,7 @@ def get_current_user(
             detail="User not authorized",
         )
 
-    return UserCreateResponseWithRole(
+    return UserCreateRequestWithRole(
         username=user.username,
         email=user.email,
         role=user.role,
@@ -37,9 +39,9 @@ def get_current_user(
 
 
 def get_premium_user(
-    current_user: UserCreateResponseWithRole = Depends(
-        get_current_user
-    ),
+    current_user: Annotated[
+        get_current_user, Depends()
+    ],
 ):
     if current_user.role != Role.premium:
         raise HTTPException(
@@ -61,9 +63,7 @@ router = APIRouter()
     },
 )
 def all_user_can_access(
-    user: UserCreateResponseWithRole = Depends(
-        get_current_user
-    ),
+    user: Annotated[get_current_user, Depends()],
 ):
     return {
         f"Hello {user.username}, welcome to your space"
@@ -79,9 +79,7 @@ def all_user_can_access(
     },
 )
 def only_premium_user_can_access(
-    user: UserCreateResponseWithRole = Depends(
-        get_premium_user
-    ),
+    user: Annotated[get_premium_user, Depends()],
 ):
     return {
         f"Hello {user.username}, "

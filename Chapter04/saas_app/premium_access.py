@@ -34,7 +34,7 @@ router = APIRouter()
 def register_premium_user(
     user: UserCreateBody,
     session: Session = Depends(get_session),
-) -> dict[str, UserCreateResponse]:
+):
     user = add_user(
         session=session,
         **user.model_dump(),
