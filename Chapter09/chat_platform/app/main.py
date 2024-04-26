@@ -13,9 +13,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.websockets import WebSocketDisconnect
 
+from app.exclusive_chatroom import (
+    router as exclusive_chatroom_router,
+)
 from app.security import User, get_user_from_token
 from app.security import router as security_router
-from app.exclusive_chatroom import router as exclusive_chatroom_router
 from app.websocket import ConnectionManager
 
 app = FastAPI()
@@ -29,8 +31,8 @@ logger = logging.getLogger("uvicorn")
     "/chatroom"
 )  # TODO change name of the function and endpoint
 async def chatroom(websocket: WebSocket):
-    if not websocket.headers.get("authorization"):
-        return await websocket.close()
+    # if not websocket.headers.get("authorization"):
+    #    return await websocket.close()
 
     await websocket.accept()
     await websocket.send_text(
@@ -51,7 +53,7 @@ async def chatroom(websocket: WebSocket):
                     code=status.WS_1008_POLICY_VIOLATION,
                     reason="Inappropriate message",
                 )
-    except WebSocketDisconnect:
+    except WebSocketDisconnect as err:
         logger.warn("Connection closed by the client")
 
 
@@ -93,6 +95,7 @@ async def websocket_chatroom(
         f"Client #{username} joined the chat",
         exclude=websocket,
     )
+    logger.info(f"Client #{username} joined the chat")
     try:
         while True:
             data = await websocket.receive_text()
@@ -108,3 +111,31 @@ async def websocket_chatroom(
         await connection_manager.broadcast(
             f"Client #{username} left the chat"
         )
+
+
+@app.websocket("/ws-for-test/{username}")
+async def websocket_overloaded_endpoint(
+    websocket: WebSocket, username: str
+):
+    await connection_manager.connect(websocket)
+    await connection_manager.broadcast(
+        f"Client #{username} joined the chat",
+        exclude=websocket,
+    )
+    logger.info(f"Client #{username} joined the chat")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await connection_manager.send_personal_message(
+                f"You wrote: {data}", websocket
+            )
+            await connection_manager.broadcast(
+                f"Client #{username} says: {data}",
+                exclude=websocket,
+            )
+            logger.info(
+                f"Client #{username} says: {data}"
+            )
+    except WebSocketDisconnect:
+        connection_manager.disconnect(websocket)
+        logger.info(f"Client #{username} left the chat")
