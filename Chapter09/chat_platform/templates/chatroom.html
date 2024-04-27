@@ -21,7 +21,7 @@
       document.querySelector("#ws-id").textContent =
         client_id;
       var ws = new WebSocket(
-        `ws://localhost:8000/chatroom/${client_id}`,
+        `ws://localhost:8000/chatroom/${client_id}`
       );
       ws.onmessage = function (event) {
         var messages =
