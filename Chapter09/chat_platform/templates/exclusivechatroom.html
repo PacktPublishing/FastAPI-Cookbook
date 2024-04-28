@@ -1,45 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
-<head>
+  <head>
     <title>Exclusive Chat</title>
-</head>
+  </head>
 
-<body>
+  <body>
     <h1>Exclusive Chat</h1>
     <h2>Your ID: <span id="ws-id"></span></h2>
     <form action="" onsubmit="sendMessage(event)">
-        <input type="text" id="messageText" autocomplete="off" />
-        <button>Send</button>
+      <input
+        type="text"
+        id="messageText"
+        autocomplete="off"
+      />
+      <button>Send</button>
     </form>
-    <ul id='messages'></ul>
-    </ul>
+    <ul id="messages"></ul>
     <script>
-        var client_id = "{{ username }}"
-        document.querySelector("#ws-id").textContent = client_id;
-        var ws = new WebSocket(
-            `ws://localhost:8000/ws/${client_id}`,
-            ['Authorization', `Bearer ${document.cookie.split('chatroomtoken=')[1]}`]
-        );
-        ws.onmessage = function (event) {
-            var messages = document.getElementById('messages')
-            var message = document.createElement('li')
-            var content = document.createTextNode(event.data)
-            if (event.data.startsWith("You wrote")) {
-                message.style.textAlign = "right";
-                message.style.color = "blue";
-                message.style.listStyle = "none";
-            }
-            message.appendChild(content)
-            messages.appendChild(message)
-        };
-        function sendMessage(event) {
-            var input = document.getElementById("messageText")
-            ws.send(input.value)
-            input.value = ''
-            event.preventDefault()
+      var client_id = "{{ username }}";
+      document.querySelector("#ws-id").textContent =
+        client_id;
+      var ws = new WebSocket(
+        `ws://localhost:8000/ws/${client_id}`,
+        [
+          "Authorization",
+          `Bearer ${document.cookie.split("chatroomtoken=")[1]}`,
+        ],
+      );
+      ws.onmessage = function (event) {
+        var messages =
+          document.getElementById("messages");
+        var message = document.createElement("li");
+        var data = JSON.parse(event.data);
+        if (data.sender == "You") {
+          data_message =
+            "You wrote: \n" + data.message;
+          message.style.textAlign = "right";
+          message.style.color = "blue";
+          message.style.listStyle = "none";
+        } else if (data.sender == "system") {
+          data_message = data.message;
+          message.style.textAlign = "center";
+          message.style.color = "red";
+          message.style.listStyle = "none";
+        } else {
+          data_message =
+            data.sender + ":\n" + data.message;
+          message.style.textAlign = "left";
+          message.style.color = "green";
+          message.style.listStyle = "none";
         }
+        var content =
+          document.createTextNode(data_message);
+        message.appendChild(content);
+        messages.appendChild(message);
+      };
+      function sendMessage(event) {
+        var input =
+          document.getElementById("messageText");
+        ws.send(input.value);
+        input.value = "";
+        event.preventDefault();
+      }
     </script>
-</body>
-
+  </body>
 </html>
