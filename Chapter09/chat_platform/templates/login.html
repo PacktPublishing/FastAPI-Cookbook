@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Login Page</title>
+  </head>
+
+  <body>
+    <h2>Login</h2>
+    <form>
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
+      /><br /><br />
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+      /><br /><br />
+      <input type="submit" value="Login" />
+    </form>
+    <script>
+      document
+        .querySelector("form")
+        .addEventListener(
+          "submit",
+          function (event) {
+            event.preventDefault();
+
+            var redirection_url =
+              "{{ redirection_url }}";
+            var username =
+              document.getElementById(
+                "username",
+              ).value;
+            var password =
+              document.getElementById(
+                "password",
+              ).value;
+
+            fetch(`http://localhost:8000/token`, {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type":
+                  "application/x-www-form-urlencoded",
+              },
+              body: `username=${username}&password=${password}`,
+            })
+              .then((response) => {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error(
+                    "Invalid credentials",
+                  );
+                }
+              })
+              .then((data) => {
+                document.cookie = `chatroomtoken=${data.access_token}`;
+                if (redirection_url) {
+                  window.location.href =
+                    redirection_url;
+                } else {
+                  document.querySelector(
+                    "form",
+                  ).style.display = "none";
+                  // Show a message
+                  var message =
+                    document.createElement("p");
+                  message.textContent =
+                    "Authenticated";
+                  document.body.appendChild(message);
+                }
+              })
+              .catch((error) => {
+                alert(error.message);
+              });
+          },
+        );
+    </script>
+  </body>
+</html>
