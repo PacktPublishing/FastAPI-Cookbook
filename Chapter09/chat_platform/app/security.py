@@ -1,20 +1,9 @@
 from typing import Optional
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Request,
-    Response,
-    WebSocket,
-    WebSocketException,
-    status,
-)
+from fastapi import (APIRouter, Depends, HTTPException, Request, Response,
+                     WebSocket, WebSocketException, status)
 from fastapi.responses import HTMLResponse
-from fastapi.security import (
-    OAuth2PasswordBearer,
-    OAuth2PasswordRequestForm,
-)
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
@@ -23,8 +12,8 @@ fake_users_db = {
         "username": "johndoe",
         "hashed_password": "hashedsecret",
     },
-    "alice": {
-        "username": "alice",
+    "janedoe": {
+        "username": "janedoe",
         "hashed_password": "hashedsecret2",
     },
 }
