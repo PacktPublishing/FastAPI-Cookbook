@@ -1,7 +1,14 @@
 from typing import Optional
 
-from fastapi import (APIRouter, Depends, HTTPException, Request, Response,
-                     WebSocket, WebSocketException, status)
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Request,
+    WebSocket,
+    WebSocketException,
+    status,
+)
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
@@ -134,6 +141,6 @@ async def login_form(
         context = {}
     return templates.TemplateResponse(
         request=request,
-        name="login.html.jinja",
+        name="login.html",
         context=context,
     )
