@@ -14,7 +14,7 @@ from app.chat import router as chat_router
 from app.exclusive_chatroom import (
     router as exclusive_chatroom_router,
 )
-from app.security import User, get_user_from_token
+from app.security import get_username_from_token
 from app.security import router as security_router
 
 app = FastAPI()
@@ -59,12 +59,13 @@ async def chatroom(websocket: WebSocket):
 @app.websocket("/secured-ws")
 async def secured_websocket(
     websocket: WebSocket,
-    user: Annotated[
-        User, Depends(get_user_from_token)
+    username: Annotated[
+        get_username_from_token, Depends()
     ],
 ):
     await websocket.accept()
-    await websocket.send_text(
-        f"Welcome {user.username} to the chat room!"
-    )
-    await websocket.close()
+    await websocket.send_text(f"Welcome {username}!")
+    async for data in websocket.iter_text():
+        await websocket.send_text(
+            f"You wrote: {data}"
+        )

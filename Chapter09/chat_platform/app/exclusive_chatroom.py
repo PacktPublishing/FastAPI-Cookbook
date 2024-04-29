@@ -1,19 +1,10 @@
 from typing import Annotated
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    Request,
-    WebSocket,
-    WebSocketDisconnect,
-)
+from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.security import (
-    fake_token_resolver,
-    get_user_from_token,
-)
+from app.security import fake_token_resolver, get_username_from_token
 from app.ws_manager import ConnectionManager
 
 router = APIRouter()
@@ -44,7 +35,7 @@ connection_manager = ConnectionManager()
 @router.websocket("/ws-eclusive")
 async def websocket_chatroom(
     websocket: WebSocket,
-    username: Annotated[get_user_from_token, Depends()],
+    username: Annotated[get_username_from_token, Depends()],
 ):
     await connection_manager.connect(websocket)
     await connection_manager.broadcast(
