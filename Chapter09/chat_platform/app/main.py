@@ -1,11 +1,19 @@
 import logging
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, WebSocket, WebSocketException, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    WebSocket,
+    WebSocketException,
+    status,
+)
 from fastapi.websockets import WebSocketDisconnect
 
 from app.chat import router as chat_router
-from app.exclusive_chatroom import router as exclusive_chatroom_router
+from app.exclusive_chatroom import (
+    router as exclusive_chatroom_router,
+)
 from app.security import User, get_user_from_token
 from app.security import router as security_router
 
@@ -15,13 +23,10 @@ app.include_router(exclusive_chatroom_router)
 app.include_router(chat_router)
 
 
-
 logger = logging.getLogger("uvicorn")
 
 
-@app.websocket(
-    "/ws"
-)
+@app.websocket("/ws")
 async def chatroom(websocket: WebSocket):
     # if not websocket.headers.get("authorization"):
     #    return await websocket.close()
@@ -46,14 +51,17 @@ async def chatroom(websocket: WebSocket):
                     reason="Inappropriate message",
                 )
     except WebSocketDisconnect:
-        logger.warn("Connection closed by the client")
-
+        logger.warn(
+            "Connection closed by the client"
+        )
 
 
 @app.websocket("/secured-ws")
 async def secured_websocket(
     websocket: WebSocket,
-    user: Annotated[User, Depends(get_user_from_token)],
+    user: Annotated[
+        User, Depends(get_user_from_token)
+    ],
 ):
     await websocket.accept()
     await websocket.send_text(
