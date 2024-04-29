@@ -1,37 +1,27 @@
 import logging
 from typing import Annotated
 
-from fastapi import (
-    Depends,
-    FastAPI,
-    Request,
-    WebSocket,
-    WebSocketException,
-    status,
-)
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import Depends, FastAPI, WebSocket, WebSocketException, status
 from fastapi.websockets import WebSocketDisconnect
 
 from app.chat import router as chat_router
-from app.exclusive_chatroom import (
-    router as exclusive_chatroom_router,
-)
+from app.exclusive_chatroom import router as exclusive_chatroom_router
 from app.security import User, get_user_from_token
 from app.security import router as security_router
-from app.ws_manager import ConnectionManager
 
 app = FastAPI()
 app.include_router(security_router)
 app.include_router(exclusive_chatroom_router)
 app.include_router(chat_router)
 
+
+
 logger = logging.getLogger("uvicorn")
 
 
 @app.websocket(
-    "/chatroomtochange"
-)  # TODO change name of the function and endpoint
+    "/ws"
+)
 async def chatroom(websocket: WebSocket):
     # if not websocket.headers.get("authorization"):
     #    return await websocket.close()
@@ -55,8 +45,9 @@ async def chatroom(websocket: WebSocket):
                     code=status.WS_1008_POLICY_VIOLATION,
                     reason="Inappropriate message",
                 )
-    except WebSocketDisconnect as err:
+    except WebSocketDisconnect:
         logger.warn("Connection closed by the client")
+
 
 
 @app.websocket("/secured-ws")
@@ -69,75 +60,3 @@ async def secured_websocket(
         f"Welcome {user.username} to the chat room!"
     )
     await websocket.close()
-
-
-templates = Jinja2Templates(directory="templates")
-
-
-@app.get("/room/{username}")
-async def chatroom_endpoint(
-    request: Request, username: str
-) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request=request,
-        name="chatroom.html",
-        context={"username": username},
-    )
-
-
-connection_manager = ConnectionManager()
-
-
-@app.websocket("/ws/{username}")
-async def websocket_chatroom(
-    websocket: WebSocket, username: str
-):
-    await connection_manager.connect(websocket)
-    await connection_manager.broadcast(
-        f"Client #{username} joined the chat",
-        exclude=websocket,
-    )
-    logger.info(f"Client #{username} joined the chat")
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await connection_manager.send_personal_message(
-                f"You wrote: {data}", websocket
-            )
-            await connection_manager.broadcast(
-                f"Client #{username} says: {data}",
-                exclude=websocket,
-            )
-    except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
-        await connection_manager.broadcast(
-            f"Client #{username} left the chat"
-        )
-
-
-@app.websocket("/ws-for-test/{username}")
-async def websocket_overloaded_endpoint(
-    websocket: WebSocket, username: str
-):
-    await connection_manager.connect(websocket)
-    await connection_manager.broadcast(
-        f"Client #{username} joined the chat",
-        exclude=websocket,
-    )
-    logger.info(f"Client #{username} joined the chat")
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await connection_manager.send_personal_message(
-                f"You wrote: {data}", websocket
-            )
-            await connection_manager.broadcast(
-                f"Client #{username} says: {data}",
-                exclude=websocket,
-            )
-            logger.info(
-                f"Client #{username} says: {data}"
-            )
-    except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
-        logger.info(f"Client #{username} left the chat")

@@ -1,5 +1,4 @@
 import multiprocessing
-from random import random
 
 import uvicorn
 from websockets import connect
@@ -11,21 +10,15 @@ def run_server():
     uvicorn.run(app)
 
 
-async def connect_client(n: int):
+async def connect_client(n: int, n_messages: int = 3):
     async with connect(
-        f"ws://localhost:8000/ws-for-test/user{n}",
+        f"ws://localhost:8000/chatroom/user{n}",
         timeout=None,
         ping_timeout=None,
         ping_interval=None,
     ) as client:
-        # client = await connect(
-        #    f"ws://localhost:8000/ws-for-test/{username}",
-        #    timeout=float("inf"),
-        #    ping_timeout=None,
-        #    ping_interval=None,
-        # )
 
-        for _ in range(3):
+        for _ in range(n_messages):
             await client.send(
                 f"Hello World from user{n}"
             )
@@ -33,12 +26,12 @@ async def connect_client(n: int):
         await asyncio.sleep(2)
 
 
-async def main():
+async def main(n_clients:int=10):
     p = multiprocessing.Process(target=run_server)
     p.start()
 
     connections = [
-        connect_client(n) for n in range(100)
+        connect_client(n) for n in range(n_clients)
     ]
 
     await asyncio.gather(*connections)

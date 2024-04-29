@@ -1,15 +1,13 @@
-from fastapi import (
-    APIRouter,
-    Request,
-    WebSocket,
-    WebSocketDisconnect,
-)
+import logging
+
+from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
 from app.templating import templates
 from app.ws_manager import ConnectionManager
 
 conn_manager = ConnectionManager()
+logger = logging.getLogger("uvicorn")
 
 
 router = APIRouter()
@@ -27,6 +25,8 @@ async def chatroom_endpoint(
         },
         exclude=websocket,
     )
+    
+    logger.info(f"{username} joined the chat")
 
     try:
         while True:
@@ -39,15 +39,20 @@ async def chatroom_endpoint(
                 {"sender": "You", "message": data},
                 websocket,
             )
+            logger.info(
+                f"{username} says: {data}"
+            )
     except WebSocketDisconnect:
         conn_manager.disconnect(websocket)
         await conn_manager.broadcast(
             {
                 "sender": "system",
-                "message": f"Client #{username} "
+                "message": f"{username} "
                 "left the chat",
             }
         )
+        logger.info(f"{username} left the chat")
+
 
 
 @router.get("/chatroom/{username}")
