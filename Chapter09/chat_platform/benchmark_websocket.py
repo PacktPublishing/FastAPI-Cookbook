@@ -1,3 +1,4 @@
+import asyncio
 import multiprocessing
 
 import uvicorn
@@ -15,9 +16,6 @@ async def connect_client(
 ):
     async with connect(
         f"ws://localhost:8000/chatroom/user{n}",
-        #timeout=None,
-        #ping_timeout=None,
-        #ping_interval=None,
     ) as client:
         for _ in range(n_messages):
             await client.send(
@@ -30,6 +28,7 @@ async def connect_client(
 async def main(n_clients: int = 10):
     p = multiprocessing.Process(target=run_server)
     p.start()
+    await asyncio.sleep(1)
 
     connections = [
         connect_client(n) for n in range(n_clients)
@@ -42,6 +41,4 @@ async def main(n_clients: int = 10):
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())
