@@ -15,9 +15,9 @@ async def connect_client(
 ):
     async with connect(
         f"ws://localhost:8000/chatroom/user{n}",
-        timeout=None,
-        ping_timeout=None,
-        ping_interval=None,
+        #timeout=None,
+        #ping_timeout=None,
+        #ping_interval=None,
     ) as client:
         for _ in range(n_messages):
             await client.send(
