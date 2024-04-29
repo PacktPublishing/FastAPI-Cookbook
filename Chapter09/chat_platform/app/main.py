@@ -27,10 +27,7 @@ logger = logging.getLogger("uvicorn")
 
 
 @app.websocket("/ws")
-async def chatroom(websocket: WebSocket):
-    # if not websocket.headers.get("authorization"):
-    #    return await websocket.close()
-
+async def ws_endpoint(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_text(
         "Welcome to the chat room!"
