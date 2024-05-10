@@ -31,7 +31,9 @@ app.include_router(internationalization.router)
 app.include_router(profiler_router)
 
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(
+    RateLimitExceeded, _rate_limit_exceeded_handler
+)
 app.add_middleware(SlowAPIMiddleware)
 
 
@@ -50,31 +52,47 @@ def get_trips(
 def get_trips_by_category(
     background_tasks: BackgroundTasks,
     category: Annotated[select_category, Depends()],
-    discount_applicable: Annotated[bool, Depends(check_coupon_validity)],
+    discount_applicable: Annotated[
+        bool, Depends(check_coupon_validity)
+    ],
 ):
     category = category.replace("-", " ").title()
     message = f"You requested {category} trips."
 
     if discount_applicable:
-        message += "\n. The coupon code is valid! " "You will get a discount!"
+        message += (
+            "\n. The coupon code is valid! "
+            "You will get a discount!"
+        )
 
-    background_tasks.add_task(store_query_to_external_db, message)
-    logger.info("Query sent to background task, end of request.")
+    background_tasks.add_task(
+        store_query_to_external_db, message
+    )
+    logger.info(
+        "Query sent to background task, end of request."
+    )
     return message
 
 
 @app.get("/v3/trips/{category}")
 def get_trips_by_category_v3(
-    common_params: Annotated[CommonQueryParams, Depends()],
+    common_params: Annotated[
+        CommonQueryParams, Depends()
+    ],
 ):
     start = common_params.start
     end = common_params.end
-    category = common_params.category.replace("-", " ").title()
+    category = common_params.category.replace(
+        "-", " "
+    ).title()
     message = f"You requested {category} trips within"
     message += f" from {start}"
     if end:
         message += f" to {end}"
     if common_params.applicable_discount:
-        message += "\n. The coupon code is valid! " "You will get a discount!"
+        message += (
+            "\n. The coupon code is valid! "
+            "You will get a discount!"
+        )
 
     return message
