@@ -1,0 +1,4 @@
+fastapi[all]
+huggingface_hub
+joblib
+scikit-learn
