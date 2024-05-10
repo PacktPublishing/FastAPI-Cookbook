@@ -4,7 +4,7 @@ from typing import Annotated
 from pydantic import create_model
 from fastapi import FastAPI, Depends
 from contextlib import asynccontextmanager
-from app.utils import symptoms as symptoms_list
+from app.utils import symptoms_list
 
 ml_model = {}
 REPO_ID = "AWeirdDev/human-disease-prediction"
@@ -23,26 +23,30 @@ async def lifespan(app: FastAPI):
     ml_model.clear()
 
 
-app = FastAPI(title="Doctor AI", lifespan=lifespan)
+app = FastAPI(title="AI Doctor", lifespan=lifespan)
 
 
 query_params = {
-    symp: (bool, False) for symp in symptoms_list[:2]
+    symp: (bool, False)
+    for symp in symptoms_list[:10]
 }
 
-symptoms_model = create_model(
-    "Symptoms", **query_params
-)
+Symptoms = create_model("Symptoms", **query_params)
 
 
 @app.get("/diagnosis")
 async def get_diagnosis(
-    symptoms: Annotated[symptoms_model, Depends()],
+    symptoms: Annotated[Symptoms, Depends()],
 ):
     array = [
         int(value)
-        for key, value in symptoms.model_dump().items()
+        for _, value in symptoms.model_dump().items()
     ]
-    print("stop here")
-    desease = ml_model["doctor"].predict([array])
-    return {"disease": desease[0]}
+    array.extend(  # adapt the array to the model's input shape
+        [0] * (len(symptoms_list) - len(array))
+    )
+    len(symptoms_list)
+    deseases = ml_model["doctor"].predict([array])
+    return {
+        "diseases": [desease for desease in deseases]
+    }

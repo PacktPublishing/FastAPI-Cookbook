@@ -1,4 +1,4 @@
-symptoms = [
+symptoms_list = [
     "itching",
     "skin_rash",
     "nodal_skin_eruptions",
