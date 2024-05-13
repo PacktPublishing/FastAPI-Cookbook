@@ -1,22 +1,13 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-
-
 from langchain.text_splitter import (
     CharacterTextSplitter,
 )
 from langchain_community.document_loaders import (
     TextLoader,
 )
+from langchain_core.documents.base import Document
 
 
-def format_docs(docs):
-    return "\n\n".join(
-        [d.page_content for d in docs]
-    )
-
-
-def load_documents():
+def load_documents() -> list[Document]:
     raw_documents = TextLoader(
         "./docs/faq_ecotech.txt"
     ).load()
@@ -26,5 +17,3 @@ def load_documents():
     return text_splitter.split_documents(
         raw_documents
     )
-
-
