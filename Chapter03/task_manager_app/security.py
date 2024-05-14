@@ -7,8 +7,8 @@ fake_users_db = {
         "username": "johndoe",
         "hashed_password": "hashedsecret",
     },
-    "alice": {
-        "username": "alice",
+    "janedoe": {
+        "username": "janedoe",
         "hashed_password": "hashedsecret2",
     },
 }
@@ -37,14 +37,18 @@ def fake_token_generator(user: UserInDB) -> str:
     return f"tokenized{user.username}"
 
 
-def fake_token_resolver(token: str) -> UserInDB | None:
+def fake_token_resolver(
+    token: str,
+) -> UserInDB | None:
     if token.startswith("tokenized"):
         user_id = token.removeprefix("tokenized")
         user = get_user(fake_users_db, user_id)
         return user
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="token"
+)
 
 
 def get_user_from_token(
