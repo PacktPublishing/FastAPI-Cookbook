@@ -16,7 +16,7 @@ load_dotenv()
 
 template: str = """/
     You are a customer support Chatbot /
-    You assist users with general inquiries/
+    You assist users with general inquiries /
     and technical issues. /
     You will answer to the {question} only based on
     the knowledge {context} you are trained on /
