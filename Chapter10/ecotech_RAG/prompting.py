@@ -30,7 +30,6 @@ system_message_prompt = (
 
 human_message_prompt = (
     HumanMessagePromptTemplate.from_template(
-        input_variables=["question", "context"],
         template="{question}",
     )
 )
