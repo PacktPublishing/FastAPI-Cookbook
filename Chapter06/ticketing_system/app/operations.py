@@ -5,9 +5,7 @@ from sqlalchemy import (
     text,
     update,
 )
-from sqlalchemy.exc import (
-    IntegrityError,
-)
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, load_only
 
@@ -195,10 +193,12 @@ async def add_sponsor_to_event(
     amount: float,
 ) -> bool:
     query = text(
-        "INSERT INTO sponsorships (event_id, sponsor_id, amount) "
+        "INSERT INTO sponsorships "
+        "(event_id, sponsor_id, amount) "
         "VALUES (:event_id, :sponsor_id, :amount) "
         "ON CONFLICT (event_id, sponsor_id) "
-        "DO UPDATE SET amount = sponsorships.amount + EXCLUDED.amount"
+        "DO UPDATE SET amount = "
+        "sponsorships.amount + EXCLUDED.amount"
     )
     params = {
         "event_id": event_id,
