@@ -1,11 +1,10 @@
-from typing import Annotated
-from dotenv import load_dotenv
-from fastapi import FastAPI, Body, Request
-from documents import load_documents
 from contextlib import asynccontextmanager
-from model import query_assistant
+from typing import Annotated
 
-load_dotenv()
+from fastapi import Body, FastAPI, Request
+
+from documents import load_documents
+from model import query_assistant
 
 
 @asynccontextmanager
@@ -20,7 +19,7 @@ app = FastAPI(title="Chatbot App", lifespan=lifespan)
 async def prompt_message(
     request: Request,
     prompt: Annotated[str, Body()],
-):
+) -> str:
     documents = request.state.documents
     response = await query_assistant(
         prompt, documents
