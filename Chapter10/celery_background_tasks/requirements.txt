@@ -1,6 +1,0 @@
-fastapi 
-uvicorn
-celery
-flower
-redis
-tqdm
