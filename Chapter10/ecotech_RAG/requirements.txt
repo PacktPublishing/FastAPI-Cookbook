@@ -7,3 +7,4 @@ chromadb
 langchain
 langchain-community
 langchain-openai 
+unstructured

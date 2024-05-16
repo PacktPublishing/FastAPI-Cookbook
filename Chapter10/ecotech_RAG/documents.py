@@ -1,38 +1,31 @@
-from pathlib import Path
 from langchain.text_splitter import (
     CharacterTextSplitter,
 )
 from langchain_community.document_loaders import (
-    TextLoader,
+    DirectoryLoader,
 )
 from langchain_community.vectorstores import Chroma
-from langchain_core.document_loaders.base import (
-    Document,
-)
-from langchain_openai import OpenAIEmbeddings
 
 
-def load_documents() -> list[Document]:
+async def load_documents(
+    db: Chroma,
+):
     text_splitter = CharacterTextSplitter(
         chunk_size=100, chunk_overlap=0
     )
 
-    raw_documents = (
-        TextLoader(filepath).load()
-        for filepath in Path().glob("./docs/*.txt")
-    )
+    raw_documents = DirectoryLoader(
+        "docs", "*.txt"
+    ).load()
 
-    return text_splitter.split_documents(
+    chunks = text_splitter.split_documents(
         raw_documents
     )
+    await db.aadd_documents(chunks)
 
 
-def get_context(
-    user_query: str, documents: list[Document]
-) -> str:
-    db = Chroma.from_documents(  # move this to load_docouments function
-        documents, OpenAIEmbeddings()
-    )
+def get_context(user_query: str, db: Chroma) -> str:
     docs = db.similarity_search(user_query)
+    # get all the documents
     context = docs[0].page_content
     return context
