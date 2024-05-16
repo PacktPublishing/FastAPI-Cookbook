@@ -26,6 +26,6 @@ async def load_documents(
 
 def get_context(user_query: str, db: Chroma) -> str:
     docs = db.similarity_search(user_query)
-    if not docs:
-        return ""
-    return docs[0].page_content
+    return "\n\n".join(
+        doc.page_content for doc in docs
+    )

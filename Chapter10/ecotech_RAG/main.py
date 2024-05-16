@@ -34,15 +34,15 @@ app = FastAPI(
 
 
 @app.post("/message")
-async def prompt_message(
+async def query_assistant(
     request: Request,
-    prompt: Annotated[str, Body()],
+    question: Annotated[str, Body()],
 ) -> str:
-    db = request.state.db
+    context = get_context(question, request.state.db)
     response = await chain.ainvoke(
         {
-            "question": prompt,
-            "context": get_context(prompt, db),
+            "question": question,
+            "context": context,
         }
     )
     return response
