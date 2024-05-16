@@ -26,8 +26,6 @@ async def lifespan(app: FastAPI):
     )
     await load_documents(db)
     yield {"db": db}
-    # search fpr documents
-    # db.get().get("documents")
 
 
 app = FastAPI(
