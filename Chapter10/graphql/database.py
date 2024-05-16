@@ -8,7 +8,7 @@ class User(BaseModel):
     country: str
 
 
-users_db = [
+users_db: list[User] = [
     User(
         id=1,
         username="user1",
@@ -86,7 +86,7 @@ users_db = [
         username="user13",
         phone_number="8888888888",
         country="Japan",
-    ), 
+    ),
     User(
         id=14,
         username="user14",
@@ -129,5 +129,4 @@ users_db = [
         phone_number="0123456789",
         country="Australia",
     ),
-
 ]

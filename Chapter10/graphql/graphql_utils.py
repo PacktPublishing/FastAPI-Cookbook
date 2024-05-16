@@ -1,12 +1,11 @@
 import strawberry
 from strawberry.fastapi import GraphQLRouter
 
-from app.database import users_db
+from database import users_db
 
 
 @strawberry.type
 class User:
-    id: int
     username: str
     phone_number: str
     country: str
@@ -15,15 +14,17 @@ class User:
 @strawberry.type
 class Query:
     @strawberry.field
-    def users(self) -> list[User]:
-        user = users_db[0]
+    def users(
+        self, country: str | None
+    ) -> list[User]:
         return [
             User(
-                id=user.id,
                 username=user.username,
                 phone_number=user.phone_number,
                 country=user.country,
-            ),
+            )
+            for user in users_db
+            if user.country == country
         ]
 
 

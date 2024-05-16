@@ -3,3 +3,4 @@ uvicorn
 celery
 flower
 redis
+tqdm
