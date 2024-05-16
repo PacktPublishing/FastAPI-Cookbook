@@ -1,7 +1,7 @@
-from langchain.prompts import ChatPromptTemplate
-from langchain.prompts.chat import (
+from langchain.prompts import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
+    ChatPromptTemplate,
 )
 
 template: str = """/

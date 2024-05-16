@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import Body, FastAPI, Request
 
-from documents import load_documents
-from model import query_assistant
+from documents import get_context, load_documents
+from model import chain
 
 
 @asynccontextmanager
@@ -12,7 +12,9 @@ async def lifespan(app: FastAPI):
     yield {"documents": load_documents()}
 
 
-app = FastAPI(title="Chatbot App", lifespan=lifespan)
+app = FastAPI(
+    title="Ecotech AI Assistant", lifespan=lifespan
+)
 
 
 @app.post("/message")
@@ -21,7 +23,12 @@ async def prompt_message(
     prompt: Annotated[str, Body()],
 ) -> str:
     documents = request.state.documents
-    response = await query_assistant(
-        prompt, documents
+    response = await chain.ainvoke(
+        {
+            "question": prompt,
+            "context": get_context(
+                prompt, documents
+            ),
+        }
     )
     return response
