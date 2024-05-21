@@ -12,6 +12,9 @@ from middlewares.response_modification import (
     ExtraResponseHeadersMiddleware,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import (
+    TrustedHostMiddleware,
+)
 import logging
 
 logger = logging.getLogger("uvicorn")
@@ -49,24 +52,21 @@ async def send(message: str = Body()):
     return message
 
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+#app.add_middleware(
+#    CORSMiddleware,
+#    allow_origins=["*"],
+#    allow_credentials=True,
+#    allow_methods=["*"],
+#    allow_headers=["*"],
+#)
 
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["localhost"],
+)
 
 subapp = FastAPI()
-
-subapp.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 @subapp.get("/")
