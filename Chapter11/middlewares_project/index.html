@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>CORS Request Example</title>
+  </head>
+  <body>
+    <h1>CORS Request Example</h1>
+    <button id="corsRequestButton">
+      Send CORS Request
+    </button>
+    <pre id="responseOutput"></pre>
+
+    <script>
+      document
+        .getElementById("corsRequestButton")
+        .addEventListener("click", async () => {
+          const responseOutput =
+            document.getElementById(
+              "responseOutput",
+            );
+          try {
+            const response = await fetch(
+              "http://localhost:8000/",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
+              },
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `HTTP error! Status: ${response.status}`,
+              );
+            }
+
+            const data = await response.json();
+            responseOutput.textContent =
+              JSON.stringify(data, null, 2);
+          } catch (error) {
+            responseOutput.textContent = `Error: ${error.message}`;
+          }
+        });
+    </script>
+  </body>
+</html>
