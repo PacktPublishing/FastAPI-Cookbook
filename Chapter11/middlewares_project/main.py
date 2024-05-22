@@ -22,6 +22,7 @@ from middlewares.response_modification import (
 from middlewares.webhook import (
     WebhookSenderMiddleWare,
 )
+from middlewares.webhook import Event
 
 logger = logging.getLogger("uvicorn")
 
@@ -80,7 +81,7 @@ app.add_middleware(
 )
 
 
-@app.post("/webhooks-url")
+@app.post("/register-webhook-url")
 async def add_webhook_url(
     request: Request, url: str = Body()
 ):
@@ -95,22 +96,10 @@ app.add_middleware(
 )
 
 
-class Subscription(BaseModel):
-    username: str
-    # monthly_fee: float
-    # start_date: datetime
-
-
-@app.webhooks.post("/subscribe")
-def subscribe(subscription: Subscription):
+@app.webhooks.post("/fastapi-webhook")
+def fastapi_webhook(event: Event):
     """_summary_
 
     Args:
-        subscription (Subscription): _description_
+        event (Event): Received event from webhook
     """
-    print("arrivato")
-
-
-from submain import subapp
-
-app.mount("/subapp", subapp)
