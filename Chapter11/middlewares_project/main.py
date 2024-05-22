@@ -1,12 +1,11 @@
 import logging
-from datetime import datetime
 from contextlib import asynccontextmanager
-from fastapi import APIRouter, Body, FastAPI, Request
+
+from fastapi import Body, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import (
     TrustedHostMiddleware,
 )
-from pydantic import BaseModel
 from starlette.middleware import Middleware
 
 from middlewares.asgi_middleware import (
@@ -20,16 +19,16 @@ from middlewares.response_modification import (
     ExtraResponseHeadersMiddleware,
 )
 from middlewares.webhook import (
+    Event,
     WebhookSenderMiddleWare,
 )
-from middlewares.webhook import Event
 
 logger = logging.getLogger("uvicorn")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield {"webhook_urls": []}
+    yield {"webhook_urls": set()}
 
 
 app = FastAPI(
@@ -87,7 +86,7 @@ async def add_webhook_url(
 ):
     if not url.startswith("http"):
         url = f"http://{url}"
-    request.state.webhook_urls.append(url)
+    request.state.webhook_urls.add(url)
     return {"url added": url}
 
 
@@ -102,4 +101,6 @@ def fastapi_webhook(event: Event):
 
     Args:
         event (Event): Received event from webhook
+        It contains information about the
+        host, path, timestamp and body of the request
     """
