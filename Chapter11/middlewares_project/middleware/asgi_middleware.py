@@ -26,7 +26,7 @@ class ASGIMiddleware:
         logger.info(f"ASGI send: {send}")
         await self.app(scope, receive, send)
         logger.info(  # include shutdown in the recipe
-            f"ASGI scope at shutdown: {scope.get('type')}"
+            f"ASGI scope after shutdown: {scope.get('type')}"
         )
 
 

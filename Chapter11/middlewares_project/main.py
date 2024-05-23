@@ -8,17 +8,17 @@ from fastapi.middleware.trustedhost import (
 )
 from starlette.middleware import Middleware
 
-from middlewares.asgi_middleware import (
+from middleware.asgi_middleware import (
     ASGIMiddleware,
     asgi_decorator,
 )
-from middlewares.request_modification import (
+from middleware.request_modification import (
     HashBodyContentMiddleWare,
 )
-from middlewares.response_modification import (
+from middleware.response_modification import (
     ExtraResponseHeadersMiddleware,
 )
-from middlewares.webhook import (
+from middleware.webhook import (
     Event,
     WebhookSenderMiddleWare,
 )
