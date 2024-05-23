@@ -16,7 +16,7 @@ from middleware.request_middleware import (
     HashBodyContentMiddleWare,
 )
 from middleware.response_middlaware import (
-    ExtraResponseHeadersMiddleware,
+    ExtraHeadersResponseMiddleware,
 )
 from middleware.webhook import (
     Event,
@@ -53,7 +53,7 @@ app.add_middleware(
 )
 
 app.add_middleware(
-    ExtraResponseHeadersMiddleware,
+    ExtraHeadersResponseMiddleware,
     headers=(
         ("new-header", "fastapi-cookbook"),
         (
