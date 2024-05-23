@@ -1,9 +1,10 @@
-import logging
 import functools
+import logging
+
 from starlette.types import (
     ASGIApp,
-    Scope,
     Receive,
+    Scope,
     Send,
 )
 
@@ -11,8 +12,13 @@ logger = logging.getLogger("uvicorn")
 
 
 class ASGIMiddleware:
-    def __init__(self, app: ASGIApp):
+    def __init__(
+        self,
+        app: ASGIApp,
+        parameter: str = "default",
+    ):
         self.app = app
+        self.parameter = parameter
 
     async def __call__(
         self,
@@ -20,23 +26,34 @@ class ASGIMiddleware:
         receive: Receive,
         send: Send,
     ):
+        logger.info("Entering ASGI middleware")
         logger.info(
-            f"ASGI scope: {scope.get('type')}"
+            f"The parameter is: {self.parameter}"
         )
-        logger.info(f"ASGI send: {send}")
+        logger.info(
+            f"event scope: {scope.get('type')}"
+        )
         await self.app(scope, receive, send)
-        logger.info(  # include shutdown in the recipe
-            f"ASGI scope after shutdown: {scope.get('type')}"
-        )
+        logger.info("Exiting ASGI middleware")
 
 
-def asgi_decorator(app):
+def asgi_middleware(
+    app: ASGIApp, parameter: str = "default"
+):
     @functools.wraps(app)
-    async def wrapped_app(scope, receive, send):
+    async def wrapped_app(
+        scope: Scope, receive: Receive, send: Send
+    ):
         logger.info(
-            f"ASGI scope decorated function: {scope.get('type')}"
+            "Entering second ASGI middleware"
         )
-
+        logger.info(
+            f"The parameter you proved is: {parameter}"
+        )
+        logger.info(
+            f"event scope: {scope.get('type')}"
+        )
         await app(scope, receive, send)
+        logger.info("Exiting second ASGI middleware")
 
     return wrapped_app

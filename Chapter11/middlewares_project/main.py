@@ -10,7 +10,7 @@ from starlette.middleware import Middleware
 
 from middleware.asgi_middleware import (
     ASGIMiddleware,
-    asgi_decorator,
+    asgi_middleware,
 )
 from middleware.request_modification import (
     HashBodyContentMiddleWare,
@@ -32,10 +32,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
+    title="Middleware Application",
     lifespan=lifespan,
     middleware=[
-        # Middleware(asgi_decorator),
-        # Middleware(ASGIMiddleware),
+        Middleware(
+            ASGIMiddleware,
+            parameter="example_parameter",
+        ),
+        Middleware(
+            asgi_middleware,
+            parameter="example_parameter",
+        ),
         Middleware(
             HashBodyContentMiddleWare,
             allowed_paths=["/send"],
@@ -56,7 +63,7 @@ app = FastAPI(
 
 @app.get("/")
 async def read_root():
-    return {"Hello": "World"}
+    return {"Hello": "Middleware World"}
 
 
 @app.post("/send")
