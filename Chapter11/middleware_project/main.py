@@ -12,10 +12,10 @@ from middleware.asgi_middleware import (
     ASGIMiddleware,
     asgi_middleware,
 )
-from middleware.request_modification import (
+from middleware.request_middleware import (
     HashBodyContentMiddleWare,
 )
-from middleware.response_modification import (
+from middleware.response_middlaware import (
     ExtraResponseHeadersMiddleware,
 )
 from middleware.webhook import (
@@ -43,21 +43,24 @@ app = FastAPI(
             asgi_middleware,
             parameter="example_parameter",
         ),
-        Middleware(
-            HashBodyContentMiddleWare,
-            allowed_paths=["/send"],
-        ),
-        Middleware(
-            ExtraResponseHeadersMiddleware,
-            headers=(
-                ("new-header", "fastapi-cookbook"),
-                (
-                    "another-header",
-                    "fastapi-cookbook",
-                ),
-            ),
-        ),
     ],
+)
+
+
+app.add_middleware(
+    HashBodyContentMiddleWare,
+    allowed_paths=["/send"],
+)
+
+app.add_middleware(
+    ExtraResponseHeadersMiddleware,
+    headers=(
+        ("new-header", "fastapi-cookbook"),
+        (
+            "another-header",
+            "fastapi-cookbook",
+        ),
+    ),
 )
 
 

@@ -1,4 +1,3 @@
-import logging
 from starlette.types import (
     ASGIApp,
     Scope,
@@ -7,8 +6,6 @@ from starlette.types import (
     Message,
 )
 from hashlib import sha1
-
-logger = logging.getLogger("uvicorn")
 
 
 class HashBodyContentMiddleWare:
@@ -32,7 +29,7 @@ class HashBodyContentMiddleWare:
             await self.app(scope, receive, send)
             return
 
-        async def modify_body() -> Message:
+        async def receive_with_new_body() -> Message:
             message = await receive()
             assert message["type"] == "http.request"
 
@@ -45,6 +42,6 @@ class HashBodyContentMiddleWare:
 
         await self.app(
             scope,
-            modify_body,
+            receive_with_new_body,
             send,
         )
