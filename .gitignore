@@ -13,7 +13,7 @@ env.bak/
 venv.bak/
 *.py[cod]
 *$py.class
-
+*.pem
 
 .DS_Store
 Thumbs.db
