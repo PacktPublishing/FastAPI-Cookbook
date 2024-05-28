@@ -80,7 +80,7 @@ async def http_exception_handler(request, exc):
 
 
 @app.get("/error_endpoint")
-async def raise_excpetion():
+async def raise_exception():
     raise HTTPException(status_code=400)
 
 
