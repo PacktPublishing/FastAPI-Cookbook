@@ -10,9 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "U.N. Owen", email = "void@some.where" },
-]
+authors = [{ name = "U.N. Owen", email = "void@some.where" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -24,7 +22,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = [ "fastapi" ]
+dependencies = ["fastapi"]
 
 [project.urls]
 Documentation = "https://github.com/U.N. Owen/fca-server#readme"
@@ -36,9 +34,7 @@ Source = "https://github.com/U.N. Owen/fca-server"
 path = "src/fca_server/__about__.py"
 
 [tool.hatch.envs.types]
-extra-dependencies = [
-  "mypy>=1.0.0",
-]
+extra-dependencies = ["mypy>=1.0.0"]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/fca_server tests}"
 
@@ -46,17 +42,11 @@ check = "mypy --install-types --non-interactive {args:src/fca_server tests}"
 source_pkgs = ["fca_server", "tests"]
 branch = true
 parallel = true
-omit = [
-  "src/fca_server/__about__.py",
-]
+omit = ["src/fca_server/__about__.py"]
 
 [tool.coverage.paths]
 fca_server = ["src/fca_server", "*/fca-server/src/fca_server"]
 tests = ["tests", "*/fca-server/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
