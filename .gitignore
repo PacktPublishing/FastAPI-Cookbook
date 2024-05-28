@@ -4,6 +4,7 @@
 .coverage
 htmlcov/
 node_modules
+dist/
 
 __pychache__/
 .venv/
