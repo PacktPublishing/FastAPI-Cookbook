@@ -5,7 +5,7 @@
     },
     "deploy": {
       "startCommand": 
-      "uvicorn app.main:app --host \"[::]\" --port \"$PORT\""
+      "uvicorn app.main:app --host :: --port $PORT"
     }
 }
   
