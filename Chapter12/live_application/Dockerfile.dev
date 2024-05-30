@@ -15,3 +15,11 @@ COPY ./app /code/app
 
 
 CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+
+CMD ["gunicorn",\
+    "app.main:app",\ 
+    "--bind", "0.0.0.0:80",\
+    "--workers", "4",\
+    "--worker-class",\
+    "uvicorn.workers.UvicornWorker",\
+    "--log-level", "debug"]
