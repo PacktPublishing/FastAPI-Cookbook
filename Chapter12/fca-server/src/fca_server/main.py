@@ -1,9 +1,9 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 
-app = FastAPI(title="FastAPI Cookbook Application")
+router = APIRouter()
 
 
-@app.get("/")
+@router.get("/home")
 def read_root():
     return {
         "message": "Welcome to the FastAPI Cookbook Application!"
