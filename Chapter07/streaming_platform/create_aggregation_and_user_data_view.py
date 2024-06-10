@@ -16,7 +16,7 @@ pipeline_redact = {
 }
 
 
-pipeline_remove_email = {"$unset": ["email", "name"]}
+pipeline_remove_email_and_name = {"$unset": ["email", "name"]}
 
 
 obfuscate_day_of_date = {
@@ -53,7 +53,7 @@ pipeline_set_actions = {
 
 pipeline = [
     pipeline_redact,
-    pipeline_remove_email,
+    pipeline_remove_email_and_name,
     pipeline_set_actions,
 ]
 
