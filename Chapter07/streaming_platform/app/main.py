@@ -212,10 +212,7 @@ async def get_songs_by_released_year(
 
 @app.get("/songs_by_artist")
 async def get_songs_by_artist(
-    artist: str,
-    db=Depends(
-        mongo_database
-    ),  # TODO use Annotated instead of =Depends
+    artist: str, db=Depends(mongo_database)
 ):
     query = db.songs.find(
         {"$text": {"$search": artist}}
@@ -225,7 +222,6 @@ async def get_songs_by_artist(
         "Index used: %s",
         explained_query.get("queryPlanner", {})
         .get("winningPlan", {})
-        .get("inputStage", {})
         .get("indexName", "No index used"),
     )
 
