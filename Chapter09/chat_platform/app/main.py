@@ -48,7 +48,7 @@ async def ws_endpoint(websocket: WebSocket):
                     reason="Inappropriate message",
                 )
     except WebSocketDisconnect:
-        logger.warn(
+        logger.warning(
             "Connection closed by the client"
         )
 

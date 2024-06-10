@@ -15,7 +15,7 @@ from fastapi.security import (
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-from app.ws_passsword_bearer import (
+from app.ws_password_bearer import (
     OAuth2WebSocketPasswordBearer,
 )
 
