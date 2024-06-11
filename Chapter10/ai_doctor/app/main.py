@@ -46,7 +46,7 @@ async def get_diagnosis(
         [0] * (len(symptoms_list) - len(array))
     )
     len(symptoms_list)
-    deseases = ml_model["doctor"].predict([array])
+    diseases = ml_model["doctor"].predict([array])
     return {
-        "diseases": [desease for desease in deseases]
+        "diseases": [disease for disease in diseases]
     }
