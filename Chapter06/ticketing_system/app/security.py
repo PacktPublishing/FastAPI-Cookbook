@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import CreditCard
 
 key = Fernet.generate_key()
-cipher_suite = Fernet(key)
+cypher_suite = Fernet(key)
 
 
 def encrypt_credit_card_info(card_info: str) -> str:
-    return cipher_suite.encrypt(
+    return cypher_suite.encrypt(
         card_info.encode()
     ).decode()
 
@@ -17,7 +17,7 @@ def encrypt_credit_card_info(card_info: str) -> str:
 def decrypt_credit_card_info(
     encrypted_card_info: str,
 ) -> str:
-    return cipher_suite.decrypt(
+    return cypher_suite.decrypt(
         encrypted_card_info.encode()
     ).decode()
 
