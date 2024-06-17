@@ -3,6 +3,7 @@ from asyncio import gather
 from contextlib import asynccontextmanager
 
 from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import (
     Body,
     Depends,
@@ -38,7 +39,9 @@ async def lifespan(app: FastAPI):
 
     db = mongo_database()
     await db.songs.drop_indexes()
-    await db.songs.create_index({"release_year": -1})
+    await db.songs.create_index(
+        {"album.release_year": -1}
+    )
     await db.songs.create_index({"artist": "text"})
 
     FastAPICache.init(
@@ -83,13 +86,12 @@ async def get_song(
     song_id: str,
     db=Depends(mongo_database),
 ):
-    song = await db.songs.find_one(
-        {
-            "_id": ObjectId(
-                song_id
-            )  # TODO add validation for song_id
-        }
-    )
+    try:
+        song = await db.songs.find_one(
+            {"_id": ObjectId(song_id)}
+        )
+    except InvalidId:
+        song = None
     if not song:
         raise HTTPException(
             status_code=404, detail="Song not found"
@@ -112,12 +114,17 @@ async def update_song(
     updated_song: dict,
     db=Depends(mongo_database),
 ):
-    result = await db.songs.update_one(
-        {"_id": ObjectId(song_id)},
-        {"$set": updated_song},
-    )
-    if result.modified_count == 1:
-        return {"message": "Song updated successfully"}
+    try:
+        result = await db.songs.update_one(
+            {"_id": ObjectId(song_id)},
+            {"$set": updated_song},
+        )
+        if result.modified_count == 1:
+            return {
+                "message": "Song updated successfully"
+            }
+    except InvalidId:
+        pass
 
     raise HTTPException(
         status_code=404, detail="Song not found"
@@ -169,9 +176,12 @@ async def get_playlist(
     playlist_id: str,
     db=Depends(mongo_database),
 ):
-    playlist = await db.playlists.find_one(
-        {"_id": ObjectId(playlist_id)}
-    )
+    try:
+        playlist = await db.playlists.find_one(
+            {"_id": ObjectId(playlist_id)}
+        )
+    except InvalidId:
+        playlist = None
     if not playlist:
         raise HTTPException(
             status_code=404, detail="Playlist not found"
@@ -196,7 +206,7 @@ async def get_songs_by_released_year(
     year: int,
     db=Depends(mongo_database),
 ):
-    query = db.songs.find({"release_year": year})
+    query = db.songs.find({"album.release_year": year})
     explained_query = await query.explain()
     logger.info(
         "Index used: %s",
@@ -210,7 +220,7 @@ async def get_songs_by_released_year(
     return songs
 
 
-@app.get("/songs_by_artist")
+@app.get("/songs/artist")
 async def get_songs_by_artist(
     artist: str, db=Depends(mongo_database)
 ):

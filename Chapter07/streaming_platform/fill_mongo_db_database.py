@@ -7,6 +7,7 @@ from app.db_connection import (
 )
 from songs_info import songs_info
 
+logging.basicConfig(level=logging.DEBUG)
 db = mongo_client.beat_streaming
 collection = db["songs"]
 
