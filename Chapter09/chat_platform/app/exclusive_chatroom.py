@@ -25,7 +25,7 @@ templates = Jinja2Templates(directory="templates")
 async def exclusive_chatroom(
     request: Request,
 ):
-    token = request.cookies.get("chatroomtoken")
+    token = request.cookies.get("chatroomtoken", "")
     user = fake_token_resolver(token)
     if not user:
         return RedirectResponse(
