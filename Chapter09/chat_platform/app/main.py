@@ -36,6 +36,7 @@ async def ws_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             logger.info(f"Message received: {data}")
+            await websocket.send_text("Message received!")
             if data == "disconnect":
                 logger.warn("Disconnecting...")
                 return await websocket.close(
