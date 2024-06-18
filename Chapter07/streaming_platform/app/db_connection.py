@@ -40,7 +40,7 @@ async def ping_elasticsearch_server():
         logger.error(
             f"Elasticsearch connection failed: {e}"
         )
-        # raise e
+        raise e
 
 
 async def ping_redis_server():
@@ -49,4 +49,4 @@ async def ping_redis_server():
         logger.info("Connected to Redis")
     except Exception as e:
         logger.error(f"Error connecting to Redis: {e}")
-        # raise e
+        raise e
