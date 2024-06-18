@@ -3,7 +3,6 @@ from asyncio import gather
 from contextlib import asynccontextmanager
 
 from bson import ObjectId
-from bson.errors import InvalidId
 from fastapi import (
     Body,
     Depends,
@@ -86,12 +85,13 @@ async def get_song(
     song_id: str,
     db=Depends(mongo_database),
 ):
-    try:
-        song = await db.songs.find_one(
-            {"_id": ObjectId(song_id)}
-        )
-    except InvalidId:
-        song = None
+    song = await db.songs.find_one(
+        {
+            "_id": ObjectId(song_id)
+            if ObjectId.is_valid(song_id)
+            else None
+        }
+    )
     if not song:
         raise HTTPException(
             status_code=404, detail="Song not found"
@@ -114,17 +114,16 @@ async def update_song(
     updated_song: dict,
     db=Depends(mongo_database),
 ):
-    try:
-        result = await db.songs.update_one(
-            {"_id": ObjectId(song_id)},
-            {"$set": updated_song},
-        )
-        if result.modified_count == 1:
-            return {
-                "message": "Song updated successfully"
-            }
-    except InvalidId:
-        pass
+    result = await db.songs.update_one(
+        {
+            "_id": ObjectId(song_id)
+            if ObjectId.is_valid(song_id)
+            else None
+        },
+        {"$set": updated_song},
+    )
+    if result.modified_count == 1:
+        return {"message": "Song updated successfully"}
 
     raise HTTPException(
         status_code=404, detail="Song not found"
@@ -137,7 +136,11 @@ async def delete_song(
     db=Depends(mongo_database),
 ):
     result = await db.songs.delete_one(
-        {"_id": ObjectId(song_id)}
+        {
+            "_id": ObjectId(song_id)
+            if ObjectId.is_valid(song_id)
+            else None
+        }
     )
     if result.deleted_count == 1:
         return {"message": "Song deleted successfully"}
@@ -176,12 +179,13 @@ async def get_playlist(
     playlist_id: str,
     db=Depends(mongo_database),
 ):
-    try:
-        playlist = await db.playlists.find_one(
-            {"_id": ObjectId(playlist_id)}
-        )
-    except InvalidId:
-        playlist = None
+    playlist = await db.playlists.find_one(
+        {
+            "_id": ObjectId(playlist_id)
+            if ObjectId.is_valid(playlist_id)
+            else None
+        }
+    )
     if not playlist:
         raise HTTPException(
             status_code=404, detail="Playlist not found"
