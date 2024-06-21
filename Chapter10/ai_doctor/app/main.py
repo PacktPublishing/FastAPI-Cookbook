@@ -26,12 +26,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="AI Doctor", lifespan=lifespan)
 
 
-query_params = {
+query_parameters = {
     symp: (bool, False)
     for symp in symptoms_list[:10]
 }
 
-Symptoms = create_model("Symptoms", **query_params)
+Symptoms = create_model("Symptoms", **query_parameters)
 
 
 @app.get("/diagnosis")
