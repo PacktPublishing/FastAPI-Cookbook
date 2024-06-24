@@ -8,7 +8,7 @@ from prompting import (
 
 load_dotenv()
 
-model = ChatCohere()
+model = ChatCohere(model="command-r-plus")
 
 chain = (
     chat_prompt_template | model | StrOutputParser()
