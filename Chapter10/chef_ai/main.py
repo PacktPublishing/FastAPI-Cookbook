@@ -5,9 +5,7 @@ from cohere import ChatMessage
 from fastapi import Body, FastAPI, Request
 from pydantic import BaseModel
 
-from handlers import (
-    generate_chat_completion_cohere_ai,
-)
+from handlers import generate_chat_completion
 
 
 @asynccontextmanager
@@ -20,18 +18,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# https://docs.cohere.com/docs/building-a-chatbot
-
 
 @app.post("/query")
-async def query_chat_box_cohere(
+async def query_chat_bot(
     request: Request,
     query: Annotated[str, Body(min_length=1)],
 ) -> str:
-    answer = (
-        await generate_chat_completion_cohere_ai(
-            query, request.state.messages
-        )
+    answer = await generate_chat_completion(
+        query, request.state.messages
     )
     return answer
 

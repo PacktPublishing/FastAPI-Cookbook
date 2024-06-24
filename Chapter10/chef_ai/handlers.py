@@ -17,7 +17,7 @@ SYSTEM_MESSAGE = (
 client = AsyncClient()
 
 
-async def generate_chat_completion_cohere_ai(
+async def generate_chat_completion(
     user_query=" ", messages=[]
 ) -> str:
     try:
