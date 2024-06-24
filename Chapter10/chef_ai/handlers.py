@@ -1,5 +1,7 @@
+from cohere import AsyncClient, ChatMessage
+from cohere.core.api_error import ApiError
 from dotenv import load_dotenv
-from openai import AsyncClient
+from fastapi import HTTPException
 
 load_dotenv()
 
@@ -11,30 +13,34 @@ SYSTEM_MESSAGE = (
     "shortly and concisely."
 )
 
-messages = [
-    {"role": "system", "content": SYSTEM_MESSAGE}
-]
 
 client = AsyncClient()
 
 
-def to_dict(obj):
-    return {
-        "content": obj.content,
-        "role": obj.role,
-    }
-
-
-async def generate_chat_completion(user_input=""):
-    messages.append(
-        {"role": "user", "content": user_input}
-    )
-    completion = (
-        await client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
+async def generate_chat_completion_cohere_ai(
+    user_query=" ", messages=[]
+) -> str:
+    try:
+        response = await client.chat(
+            message=user_query,
+            model="command-r-plus",
+            preamble=SYSTEM_MESSAGE,
+            chat_history=messages,
         )
-    )
-    message = completion.choices[0].message
-    messages.append(to_dict(message))
-    return message.content
+        messages.extend(
+            [
+                ChatMessage(
+                    role="USER", message=user_query
+                ),
+                ChatMessage(
+                    role="CHATBOT",
+                    message=response.text,
+                ),
+            ]
+        )
+        return response.text
+
+    except ApiError as e:
+        raise HTTPException(
+            status_code=e.status_code, detail=e.body
+        )
