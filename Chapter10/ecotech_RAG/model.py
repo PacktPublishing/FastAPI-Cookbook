@@ -1,8 +1,6 @@
 from dotenv import load_dotenv
 from langchain.schema import StrOutputParser
-from langchain_openai import (
-    ChatOpenAI,
-)
+from langchain_cohere import ChatCohere
 
 from prompting import (
     chat_prompt_template,
@@ -10,10 +8,7 @@ from prompting import (
 
 load_dotenv()
 
-
-model = ChatOpenAI(
-    model="gpt-3.5-turbo", temperature=0.3
-)
+model = ChatCohere()
 
 chain = (
     chat_prompt_template | model | StrOutputParser()

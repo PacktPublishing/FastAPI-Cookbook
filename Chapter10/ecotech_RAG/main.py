@@ -11,9 +11,9 @@ from fastapi import (
 from langchain.text_splitter import (
     CharacterTextSplitter,
 )
+from langchain_cohere import CohereEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
 
 from documents import get_context, load_documents
 from model import chain
@@ -22,7 +22,7 @@ from model import chain
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = Chroma(
-        embedding_function=OpenAIEmbeddings()
+        embedding_function=CohereEmbeddings()
     )
     await load_documents(db)
     yield {"db": db}

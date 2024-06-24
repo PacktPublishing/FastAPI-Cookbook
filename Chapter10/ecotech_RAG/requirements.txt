@@ -4,7 +4,9 @@ python-dotenv
 
 
 chromadb
+unstructured
+
+
 langchain
 langchain-community
-langchain-openai 
-unstructured
+langchain-cohere
